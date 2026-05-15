@@ -1,6 +1,7 @@
 package ru.qsystems.telegrambot.api;
 
 import io.micronaut.core.annotation.Nullable;
+import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
@@ -38,6 +39,7 @@ public class ChatCoreController {
     }
 
     @Schema(name = "ChatActionRequest", description = "Запрос действия посетителя в рамках сессии")
+    @Introspected
     @Serdeable
     public record ActionRequest(
             @Schema(description = "Legacy формат действия, например select-service:123", example = "select-service:123") String action,
