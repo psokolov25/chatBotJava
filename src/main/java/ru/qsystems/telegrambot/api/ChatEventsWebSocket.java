@@ -2,6 +2,7 @@ package ru.qsystems.telegrambot.api;
 
 import io.micronaut.websocket.WebSocketSession;
 import io.micronaut.websocket.annotation.OnClose;
+import io.micronaut.websocket.annotation.OnMessage;
 import io.micronaut.websocket.annotation.OnOpen;
 import io.micronaut.websocket.annotation.ServerWebSocket;
 
@@ -34,6 +35,12 @@ public class ChatEventsWebSocket {
         if (sessionId != null) {
             broadcaster.unregister(sessionId, this);
         }
+    }
+
+    @OnMessage
+    public void onMessage(String ignored) {
+        // Серверный сокет используется только для push-событий от backend к клиенту.
+        // Наличие @OnMessage обязательно для Micronaut WebSocket endpoint.
     }
 
     public void send(String payload) {
