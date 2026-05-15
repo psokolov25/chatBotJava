@@ -1,164 +1,177 @@
-# Telegram Orchestra Bot — Java 17 + Micronaut
+# Telegram Orchestra Bot (Java 17 + Micronaut)
 
-Реализация исходного Python-проекта `Queue Telegram Bot (Orchestra + CometD)` на стеке **Java 17 + Micronaut 4.10.13**.
+![Java 17+](https://img.shields.io/badge/Java-17%2B-blue)
+![Micronaut 4](https://img.shields.io/badge/Micronaut-4.x-2C3E50)
+![Maven](https://img.shields.io/badge/Build-Maven-C71A36)
+![Docker Compose](https://img.shields.io/badge/Deploy-Docker_Compose-2496ED)
+![Docs role-based](https://img.shields.io/badge/Docs-Role--Based-success)
+![PlantUML](https://img.shields.io/badge/Diagrams-PlantUML-orange)
 
-## Что перенесено
+Production-ready Telegram-бот для выдачи талонов и уведомлений из систем электронной очереди **Orchestra** и **Axioma**.
 
-- Telegram Bot API через long polling, без webhook.
-- Многофилиальная конфигурация через `ORCHESTRA_BRANCHES`.
-- Single-branch fallback через `BRANCH_ID`, `ORCHESTRA_ENTRY_POINT_ID`, `ORCHESTRA_BRANCH_CODE`, `ORCHESTRA_BRANCH_NAME`.
-- Выбор отделения и услуги в Telegram inline keyboard.
-- Клиентский путь из `client_path.yml` с переходами `next_question_id`.
-- Маппинг ответов на услуги через `services` или `service_names`.
-- Режимы мультисервиса: `auto`, `choose`, `choose_many`.
-- Создание визита в Orchestra REST API.
-- Создание визита в Axioma REST API.
-- Подписка на Orchestra CometD `/events/{prefix}/QVoiceLight`.
-- Обработка событий `VISIT_CALL` / `VISIT_RECALL` и персональная отправка уведомления пользователю.
-- Нормализация Axioma Kafka событий `VISIT_CALLED` / `VISIT_RECALLED`.
-- Шаблоны уведомлений с безопасным сохранением неизвестных плейсхолдеров.
-- Маскирование персональных данных в логах.
-- Служебный endpoint `/api/bot/status`.
+---
 
-## Требования
+## Содержание
+- [1. Что делает сервис](#1-что-делает-сервис)
+- [2. Для кого этот репозиторий](#2-для-кого-этот-репозиторий)
+- [3. Быстрый старт (10 минут)](#3-быстрый-старт-10-минут)
+- [4. Архитектура](#4-архитектура)
+- [5. Конфигурация (env + yml)](#5-конфигурация-env--yml)
+- [6. Основные пользовательские сценарии](#6-основные-пользовательские-сценарии)
+- [7. Эксплуатация и troubleshooting](#7-эксплуатация-и-troubleshooting)
+- [8. Ролевые документы](#8-ролевые-документы)
+- [9. Диаграммы и как их обновлять](#9-диаграммы-и-как-их-обновлять)
+- [10. Границы и ограничения текущей реализации](#10-границы-и-ограничения-текущей-реализации)
 
+## 1. Что делает сервис
+Сервис:
+1. Получает апдейты Telegram через long polling.
+2. Ведёт пользователя по сценарию выбора филиала/услуги.
+3. Создаёт визит (талон) в Orchestra или Axioma.
+4. Сопоставляет визит с Telegram-пользователем.
+5. Отправляет персональные уведомления о вызове (`VISIT_CALL`/`VISIT_RECALL`).
+
+## 2. Для кого этот репозиторий
+- **Внедрение/интеграторы** — как быстро подключить филиалы.
+- **Поддержка (L1/L2)** — как диагностировать инциденты.
+- **DevOps/SRE** — как эксплуатировать и мониторить.
+- **Разработчики** — как устроены модули и где менять код.
+- **Продажи/пресейл** — как объяснить ценность и требования.
+
+## 3. Быстрый старт (10 минут)
+### 3.1 Требования
 - Java 17+
 - Maven 3.9+
 - Доступ к Telegram Bot API
-- Доступ к Orchestra REST + CometD и/или Axioma REST + Kafka
+- Доступ к Orchestra/Axioma API
+- (Опционально) Kafka/CometD для событий вызова
 
-## Сборка
-
+### 3.2 Сборка
 ```bash
 mvn -U clean test package
 ```
 
-> `-U` нужен после неудачной попытки с несуществующим `io.micronaut.platform:micronaut-platform:4.9.10`, потому что Maven кэширует отрицательный результат разрешения артефакта в локальном репозитории.
-
-Запуск:
-
+### 3.3 Запуск
 ```bash
 java -jar target/telegram-orchestra-bot-1.0.0-SNAPSHOT.jar
 ```
 
-Отладочные значения из исходного `.env` уже перенесены в два места: как дефолты в `src/main/resources/application.yml` и как значения в корневой `.env`, который подключён в `docker-compose.yml` через `env_file`. Поэтому проект можно запускать сразу для отладки, а при необходимости менять параметры в `.env` без правки Java-кода.
-
-Проверка статуса:
-
+### 3.4 Проверка готовности
 ```bash
 curl http://localhost:8080/api/bot/status
 ```
+Ожидается корректный JSON-ответ со статусом сервиса.
 
-## Docker Compose
-
+### 3.5 Запуск в Docker Compose
 ```bash
 docker compose up -d --build
 docker compose logs -f telegram-orchestra-bot
 ```
 
-## Основная конфигурация
+## 4. Архитектура
+### 4.1 Высокоуровнево
+- **Вход:** Telegram updates (long polling).
+- **Интеграция очереди:** REST Orchestra/Axioma.
+- **События вызова:** CometD (Orchestra) и Kafka (Axioma).
+- **Конфигурация:** `application.yml` + env.
 
-Основная конфигурация хранится в `src/main/resources/application.yml`. В нём используются placeholders вида `${ENV_NAME:debug-default}`: если переменная окружения задана, Micronaut берёт её; если нет — использует отладочный дефолт из исходного Python `.env`. Для Docker Compose эти же значения продублированы в корневом `.env`, подключённом через `env_file`. Ключевые секции:
+### 4.2 Карта модулей
+- `telegram/` — polling, state machine, keyboard.
+- `queue/` — REST-шлюз к системам очереди.
+- `events/` — нормализация и диспетчеризация событий вызова.
+- `cometd/` — подписка на Orchestra event stream.
+- `kafka/` — consumer для Axioma событий.
+- `path/` — сценарий клиентского пути из YAML.
+- `config/` — конфигурация, парсинг branch settings.
 
-| Секция `application.yml` | Назначение |
-|---|---|
-| `bot.telegram` | Telegram Bot API token, URL и long polling |
-| `bot.queue` | Orchestra/Axioma URL, логины, пароли, fallback-филиал и JSON филиалов |
-| `bot.runtime` | клиентский путь, порядок диалога, blacklist услуг, шаблоны уведомлений, multi-service overrides |
-| `bot.cometd` | настройки Orchestra CometD подписки |
-| `bot.kafka` | настройки Kafka consumer для Axioma |
+![Runtime overview](docs/diagrams/runtime-overview.svg)
+![Integration flow](docs/diagrams/integration-flow.svg)
 
-Пример `ORCHESTRA_BRANCHES`:
+## 5. Конфигурация (env + yml)
+### 5.1 Где что настраивается
+- `src/main/resources/application.yml` — базовые ключи и значения по умолчанию.
+- `.env` — переменные окружения для локального запуска и docker-compose.
+- `client_path.yml` — сценарий вопросов/ответов клиента.
 
-```json
-[
-  {"id":"6","name":"Нотариус","prefix":"NTR","entry_point_id":"2","queue_system":"orchestra","base_url":"http://192.168.0.38:8080/","login":"superadmin","password":"secret"},
-  {"id":"cd842979-3dc1-4505-a1ae-9a92f0622da2","name":"Банк Дубна","prefix":"DUB","entry_point_id":"f7ff91a7-a2a7-4b90-adaf-b2d38a24e0f2","queue_system":"axioma","base_url":"http://192.168.8.40:8080/","login":"superadmin","password":"secret"}
-]
+### 5.2 Ключевые группы параметров
+- `bot.telegram.*` — токен, polling и endpoint Telegram.
+- `bot.queue.*` — настройки Orchestra/Axioma, branch fallback, credentials.
+- `bot.runtime.*` — настройки клиентского пути, шаблоны, blacklists.
+- `bot.cometd.*` — параметры подписки на Orchestra события.
+- `bot.kafka.*` — настройки Kafka consumer.
+
+### 5.3 Multi-branch
+Используется `ORCHESTRA_BRANCHES` (JSON-массив).
+Минимально у филиала должны быть:
+- `id`
+- `entry_point_id`
+- `queue_system` (`orchestra` | `axioma`)
+- `base_url`
+- `login` / `password`
+
+## 6. Основные пользовательские сценарии
+### 6.1 Happy path
+1. Пользователь отправляет `/start`.
+2. Выбирает филиал.
+3. Выбирает услугу (или несколько услуг при соответствующем режиме).
+4. Бот создаёт визит и возвращает номер талона.
+5. При вызове бот отправляет персональное уведомление.
+
+### 6.2 Ошибочные ветки
+- Услуги не загрузились → показать fallback-сообщение и записать ошибку в лог.
+- Визит не создался → вернуть пользователю понятное сообщение без технических деталей.
+- Не найден chat binding для события вызова → событие логируется, пользователю ничего не отправляется.
+
+## 7. Эксплуатация и troubleshooting
+### 7.1 Быстрый чек (L1)
+1. Проверить `/api/bot/status`.
+2. Проверить логи приложения.
+3. Проверить доступность upstream API.
+4. Проверить корректность branch-конфига.
+
+### 7.2 Типовые причины инцидентов
+- Неверные credentials к queue API.
+- Ошибка `branchId`/`entryPointId` в конфигурации.
+- Недоступный Kafka broker или проблемы подписки CometD.
+- Сетевые таймауты между ботом и upstream.
+
+### 7.3 Что передавать при эскалации
+- Timestamp (UTC).
+- Branch ID + queue system.
+- Chat ID (маскированно при необходимости).
+- HTTP status/response фрагменты.
+- Лог-фрагмент/stack trace.
+
+## 8. Ролевые документы
+- Поддержка:
+  - `docs/roles/support-quick.md`
+  - `docs/roles/support-detailed.md`
+- Внедрение:
+  - `docs/roles/implementation-quick.md`
+  - `docs/roles/implementation-detailed.md`
+- Разработка: `docs/roles/development.md`
+- DevOps: `docs/roles/devops.md`
+- Продажи: `docs/roles/sales.md`
+
+## 9. Диаграммы и как их обновлять
+### 9.1 Исходники
+- `docs/diagrams-src/runtime-overview.puml`
+- `docs/diagrams-src/integration-flow.puml`
+
+### 9.2 Генерация SVG
+```bash
+plantuml -tsvg docs/diagrams-src/runtime-overview.puml docs/diagrams-src/integration-flow.puml -o ../diagrams
 ```
 
-## REST-точки СУО
+### 9.3 Проверка
+После генерации убедитесь, что файлы обновились:
+- `docs/diagrams/runtime-overview.svg`
+- `docs/diagrams/integration-flow.svg`
 
-### Orchestra
-
-Получение услуг:
-
-```text
-GET /rest/servicepoint/branches/{branchId}/services/
-```
-
-Создание визита:
-
-```text
-POST /rest/entrypoint/branches/{branchId}/entryPoints/{entryPointId}/visits/
-```
-
-Тело:
-
-```json
-{
-  "services": ["101"],
-  "parameters": {
-    "TelegramCustomerId": "123456",
-    "TelegramChatId": "123456",
-    "TelegramCustomerFullName": "Иван Иванов",
-    "TelegramClientPath": "{...}"
-  }
-}
-```
-
-### Axioma
-
-Получение услуг:
-
-```text
-GET /entrypoint/branches/{branchId}/services
-```
-
-Создание визита:
-
-```text
-POST /entrypoint/branches/{branchId}/entry-points/{entryPointId}/visits/parameters?printTicket=false
-```
-
-Тело:
-
-```json
-{
-  "serviceIds": ["101"],
-  "parameters": {
-    "TelegramCustomerId": "123456",
-    "TelegramChatId": "123456",
-    "TelegramCustomerFullName": "Иван Иванов"
-  }
-}
-```
-
-## Важные отличия от Python-версии
-
-- Для отладки значения из исходного `.env` перенесены как дефолты в `application.yml` и продублированы в корневом `.env`, который использует `docker-compose.yml`. В Java-коде они не захардкожены; для production лучше заменить их внешними секретами/переменными окружения.
-- Исправлена ошибка исходника, где `get_services(branch_id)` обращался к несуществующей переменной `branch`.
-- Логика разнесена на компоненты: Telegram, очередь, клиентский путь, CometD, Kafka, события.
-- Добавлены unit-тесты для парсинга филиалов, шаблонов уведомлений и маскирования PII.
-
-## Ограничения текущей реализации
-
-- Состояние Telegram-пользователей хранится в памяти процесса. После рестарта пользователь должен снова выполнить `/start` и взять талон. Для production можно заменить `UserStateStore` на Redis/JDBC.
-- Telegram long polling выполняется в одном потоке. Для обычного бота очереди этого достаточно; для высокой нагрузки стоит добавить очередь обработки update-ов.
-- Axioma Kafka consumer включается только при наличии филиалов `queue_system=axioma`; при необходимости можно выключить через `AXIOMA_KAFKA_ENABLED=false`.
-
-## Структура проекта
-
-```text
-src/main/java/ru/qsystems/telegrambot
-  api/        служебный REST status endpoint
-  cometd/     Orchestra CometD long polling client
-  config/     конфигурация и парсинг филиалов
-  events/     нормализация и диспетчеризация событий вызова
-  kafka/      Axioma Kafka consumer
-  model/      доменные модели
-  path/       YAML клиентского пути
-  queue/      REST gateway к Orchestra/Axioma
-  telegram/   Telegram API polling, keyboard, state machine
-  util/       JSON и PII utils
-```
+## 10. Границы и ограничения текущей реализации
+- Состояние пользователей хранится в памяти процесса (после рестарта сценарий начинается заново).
+- Long polling выполняется в одном процессе/контуре без внешней очереди апдейтов.
+- Для production рекомендуется:
+  - вынести секреты в secret manager,
+  - хранить состояние пользователей во внешнем storage (например, Redis/JDBC),
+  - настроить мониторинг и алертинг на upstream ошибки.

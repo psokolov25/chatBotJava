@@ -1,0 +1,15 @@
+@startuml
+title Runtime overview
+actor User
+participant Telegram
+participant "Bot (Micronaut)" as Bot
+participant "Queue API\n(Orchestra/Axioma)" as Queue
+participant "CometD/Kafka" as Events
+User -> Telegram: /start + выбор услуги
+Telegram -> Bot: update (long polling)
+Bot -> Queue: GET services / POST visit
+Queue --> Bot: ticket data
+Bot --> Telegram: номер талона
+Events -> Bot: VISIT_CALL / VISIT_RECALL
+Bot --> Telegram: уведомление о вызове
+@enduml
