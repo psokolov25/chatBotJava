@@ -1,0 +1,16 @@
+@startuml
+title Integration flow
+start
+:Load config from env/application.yml;
+:Build branch map;
+if (Queue system?) then (Orchestra)
+  :REST + CometD;
+else (Axioma)
+  :REST + Kafka;
+endif
+:Receive Telegram update;
+:Resolve branch + service;
+:Create visit;
+:Bind ticket to chat id;
+stop
+@enduml

@@ -25,6 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Шлюз для работы с REST API систем очереди (Orchestra и Axioma).
+ *
+ * <p>Инкапсулирует различия URL/контрактов и выполняет базовую авторизацию.</p>
+ */
 @Singleton
 public class QueueGateway {
     private static final Logger LOG = LoggerFactory.getLogger(QueueGateway.class);
@@ -43,6 +48,12 @@ public class QueueGateway {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Получает список услуг для выбранного филиала.
+     *
+     * @param branch конфигурация филиала из runtime-конфига.
+     * @return список услуг; при ошибке возвращается пустой список.
+     */
     public List<ServiceInfo> getServices(BranchConfig branch) {
         BranchConnection connection = branchConfigurationService.connectionFor(branch);
         String url = switch (connection.queueSystem()) {
@@ -70,6 +81,16 @@ public class QueueGateway {
         }
     }
 
+    /**
+     * Создаёт визит в целевой системе очереди с параметрами из Telegram-диалога.
+     *
+     * @param branch конфигурация филиала.
+     * @param serviceIds идентификаторы выбранных услуг.
+     * @param customerId идентификатор пользователя Telegram.
+     * @param customerName ФИО/имя пользователя.
+     * @param clientPathAnswers ответы по клиентскому пути.
+     * @return JSON-ответ системы очереди или {@link Optional#empty()} при ошибке.
+     */
     public Optional<Map<String, Object>> createVisit(
             BranchConfig branch,
             List<String> serviceIds,
