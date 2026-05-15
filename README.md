@@ -86,6 +86,9 @@ docker compose logs -f telegram-orchestra-bot
 
 ![Runtime overview](docs/diagrams/runtime-overview.svg)
 ![Integration flow](docs/diagrams/integration-flow.svg)
+![Network flow](docs/diagrams/network-flow.svg)
+![CometD sequence](docs/diagrams/cometd-sequence.svg)
+![Ticket sequence](docs/diagrams/ticket-sequence.svg)
 
 ## 5. Конфигурация (env + yml)
 ### 5.1 Где что настраивается
@@ -210,6 +213,11 @@ plantuml -tsvg docs/diagrams-src/runtime-overview.puml docs/diagrams-src/integra
 После генерации убедитесь, что файлы обновились:
 - `docs/diagrams/runtime-overview.svg`
 - `docs/diagrams/integration-flow.svg`
+
+Дополнительно (если используете расширенный комплект схем), проверьте наличие:
+- `docs/diagrams/network-flow.svg`
+- `docs/diagrams/cometd-sequence.svg`
+- `docs/diagrams/ticket-sequence.svg`
 
 ## 10. Границы и ограничения текущей реализации
 - Состояние пользователей хранится в памяти процесса (после рестарта сценарий начинается заново).
