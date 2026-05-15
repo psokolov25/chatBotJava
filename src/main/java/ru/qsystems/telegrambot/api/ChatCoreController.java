@@ -4,6 +4,8 @@ import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.annotation.Error;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +40,11 @@ public class ChatCoreController {
         return service.act(sessionId, new ChatCoreService.CoreAction(type, value, request.customerName()));
     }
 
+
+    @Error(exception = IllegalArgumentException.class)
+    public HttpResponse<java.util.Map<String, String>> onBadRequest(IllegalArgumentException e) {
+        return HttpResponse.badRequest(java.util.Map.of("message", e.getMessage()));
+    }
     @Schema(name = "ChatActionRequest", description = "Запрос действия посетителя в рамках сессии")
     @Introspected
     @Serdeable

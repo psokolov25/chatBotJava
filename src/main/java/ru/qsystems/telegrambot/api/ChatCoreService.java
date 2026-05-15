@@ -54,6 +54,7 @@ public class ChatCoreService {
         if (action.customerName() != null && !action.customerName().isBlank()) {
             state.customerName = action.customerName();
         }
+        if (action.type() == null || action.type().isBlank()) throw new IllegalArgumentException("Action type is required");
         CoreResponse response = switch (action.type()) {
             case "take-ticket" -> onTakeTicket(state);
             case "select-branch" -> onSelectBranch(state, action.value());
@@ -75,7 +76,12 @@ public class ChatCoreService {
 
     public Optional<String> sessionForVisitor(String visitorId) { return Optional.ofNullable(visitorToSession.get(visitorId)); }
     private List<ServiceInfo> loadVisibleServices(BranchConfig branch) { return serviceFilter.visibleServices(queueGateway.getServices(branch)); }
-    private BranchConfig branchOf(CoreSessionState state) { return branches.byId(state.branchId).orElseThrow(); }
+    private BranchConfig branchOf(CoreSessionState state) {
+        if (state.branchId == null || state.branchId.isBlank()) {
+            throw new IllegalArgumentException("Сначала выберите отделение действием select-branch");
+        }
+        return branches.byId(state.branchId).orElseThrow(() -> new IllegalArgumentException("Branch not found: " + state.branchId));
+    }
     private List<ServiceInfo> mappedServices(CoreSessionState state, List<ServiceInfo> services) { return state.pathMappedServiceIds.isEmpty() ? services : services.stream().filter(s -> state.pathMappedServiceIds.contains(s.id())).toList(); }
     private static List<CoreOption> toBranchOptions(List<BranchConfig> branches) { return branches.stream().map(b -> new CoreOption("select-branch:" + b.branchId(), b.name())).toList(); }
     private static List<CoreOption> toPathOptions(PathQuestion q) { List<CoreOption> out = new ArrayList<>(); for (int i = 0; i < q.options().size(); i++) out.add(new CoreOption("path-option:" + q.questionId() + ":" + i, q.options().get(i).text())); if (q.includeOtherServicesOption()) out.add(new CoreOption("path-other:" + q.questionId(), "Другое")); return out; }
