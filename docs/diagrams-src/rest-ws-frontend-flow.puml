@@ -1,0 +1,33 @@
+@startuml
+skinparam BackgroundColor white
+title Принцип работы REST API + WebSocket для абстрактного frontend
+
+actor "Frontend\n(Web/Mobile)" as FE
+participant "Chat REST API" as API
+participant "Chat Session Store" as SESS
+participant "Chat WebSocket" as WS
+participant "Event Dispatcher" as EVT
+
+FE -> API: POST /api/chat/init
+API -> SESS: create/get session(visitor)
+SESS --> API: sessionId + visitorId
+API --> FE: sessionId, wsEndpoint, message, options
+
+FE -> WS: CONNECT /ws/events/{sessionId}
+WS -> SESS: validate sessionId
+SESS --> WS: session exists
+WS --> FE: {type: "connected", sessionId}
+
+loop события очереди
+  EVT -> WS: VISIT_CALL / VISIT_RECALL
+  WS -> SESS: resolve session by visitorId
+  SESS --> WS: target session(s)
+  WS --> FE: {type:"visit-event", message, timestamp}
+end
+
+alt sessionId неизвестен
+  WS -> SESS: validate sessionId
+  SESS --> WS: not found
+  WS --> FE: close connection (policy violation)
+end
+@enduml
