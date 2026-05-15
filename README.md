@@ -90,6 +90,33 @@ docker compose logs -f telegram-orchestra-bot
 ![CometD sequence](docs/diagrams/cometd-sequence.svg)
 ![Ticket sequence](docs/diagrams/ticket-sequence.svg)
 
+### 4.3 REST → WebSocket handoff для web-чата
+После `POST /api/chat/init` фронтенд получает `sessionId` и `wsEndpoint`, затем открывает `ws://<host>:<port><wsEndpoint>` и подписывается на адресные события посетителя.
+
+```mermaid
+sequenceDiagram
+    participant UI as Web Frontend
+    participant API as Chat REST API
+    participant WS as Chat WebSocket
+    participant EVT as Event Dispatcher
+
+    UI->>API: POST /api/chat/init
+    API-->>UI: { sessionId, visitorId, wsEndpoint, ... }
+    UI->>WS: CONNECT /ws/events/{sessionId}
+    WS-->>UI: { type: "connected", sessionId }
+    EVT->>WS: VISIT_CALL / VISIT_RECALL
+    WS-->>UI: { type: "visit-event", message, timestamp }
+```
+
+```mermaid
+flowchart LR
+    A[Kafka/CometD event] --> B[VisitCallEventDispatcher]
+    B --> C[sessionForVisitor(visitorId)]
+    C --> D[ChatEventBroadcaster]
+    D --> E[/ws/events/{sessionId}/]
+    E --> F[Browser tabs/devices]
+```
+
 ## 5. Конфигурация (env + yml)
 ### 5.1 Где что настраивается
 - `src/main/resources/application.yml` — базовые ключи и значения по умолчанию.
@@ -164,6 +191,25 @@ docker compose logs -f telegram-orchestra-bot
 - Услуги не загрузились → показать fallback-сообщение и записать ошибку в лог.
 - Визит не создался → вернуть пользователю понятное сообщение без технических деталей.
 - Не найден chat binding для события вызова → событие логируется, пользователю ничего не отправляется.
+
+### 6.3 REST API + WebSocket сценарий для web-клиента
+1. Фронтенд вызывает `POST /api/chat/init` и получает `sessionId`, `visitorId`, `message`, `options`, `wsEndpoint`.
+2. Фронтенд подключается к `ws://<host>:<port><wsEndpoint>`.
+3. Сервер отправляет техническое сообщение `{"type":"connected","sessionId":"..."}`.
+4. По мере обработки событий очереди посетитель получает сообщения `{"type":"visit-event","message":"...","timestamp":"..."}`.
+5. Если `sessionId` не существует, WebSocket соединение закрывается на этапе `OnOpen`.
+
+### 6.4 Что покрыто тестами
+- REST контроллеры:
+  - `ChatCoreController`: init, legacy action parsing, bad-request handler.
+  - `StatusController`: формирование status-ответа и branch views.
+- WebSocket:
+  - регистрация/дерегистрация сокета;
+  - отклонение неизвестной сессии;
+  - broadcast в несколько соединений одной сессии.
+- Контроллер обработки Telegram callbacks/messages:
+  - happy path `/start`;
+  - ошибка выбора несуществующего филиала.
 
 ## 7. Эксплуатация и troubleshooting
 ### 7.1 Быстрый чек (L1)
