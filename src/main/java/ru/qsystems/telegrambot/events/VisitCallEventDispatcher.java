@@ -3,6 +3,8 @@ package ru.qsystems.telegrambot.events;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.qsystems.telegrambot.api.ChatCoreService;
+import ru.qsystems.telegrambot.api.ChatEventBroadcaster;
 import ru.qsystems.telegrambot.config.BranchConfigurationService;
 import ru.qsystems.telegrambot.model.BranchConfig;
 import ru.qsystems.telegrambot.telegram.TelegramApiClient;
@@ -23,19 +25,25 @@ public class VisitCallEventDispatcher {
     private final BranchConfigurationService branches;
     private final VisitMessageRenderer renderer;
     private final PiiSanitizer sanitizer;
+    private final ChatEventBroadcaster eventBroadcaster;
+    private final ChatCoreService chatCoreService;
 
     public VisitCallEventDispatcher(
             TelegramApiClient telegramApiClient,
             UserStateStore userStateStore,
             BranchConfigurationService branches,
             VisitMessageRenderer renderer,
-            PiiSanitizer sanitizer
+            PiiSanitizer sanitizer,
+            ChatEventBroadcaster eventBroadcaster,
+            ChatCoreService chatCoreService
     ) {
         this.telegramApiClient = telegramApiClient;
         this.userStateStore = userStateStore;
         this.branches = branches;
         this.renderer = renderer;
         this.sanitizer = sanitizer;
+        this.eventBroadcaster = eventBroadcaster;
+        this.chatCoreService = chatCoreService;
     }
 
     @SuppressWarnings("unchecked")
@@ -83,5 +91,11 @@ public class VisitCallEventDispatcher {
 
         String message = renderer.render(branch.get().visitCallTemplate(), prm, event);
         telegramApiClient.sendMessage(chatId, message, null);
+        Object visitorIdRaw = prm.get("TelegramCustomerId");
+        if (visitorIdRaw != null) {
+            chatCoreService.sessionForVisitor(String.valueOf(visitorIdRaw)).ifPresent(sessionId ->
+                    eventBroadcaster.broadcastToSession(sessionId, message)
+            );
+        }
     }
 }

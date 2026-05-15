@@ -8,6 +8,16 @@ micronaut:
       read-timeout: 95s
       connect-timeout: 10s
 
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
+
+
 logger:
   levels:
     ru.qsystems.telegrambot: ${LOG_LEVEL:INFO}
