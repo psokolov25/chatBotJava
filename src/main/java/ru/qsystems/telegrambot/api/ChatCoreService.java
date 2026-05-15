@@ -2,6 +2,7 @@ package ru.qsystems.telegrambot.api;
 
 import io.micronaut.core.annotation.Nullable;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.micronaut.serde.annotation.Serdeable;
 import jakarta.inject.Singleton;
 import ru.qsystems.telegrambot.config.BranchConfigurationService;
 import ru.qsystems.telegrambot.model.BranchConfig;
@@ -80,6 +81,7 @@ public class ChatCoreService {
     private static List<CoreOption> toPathOptions(PathQuestion q) { List<CoreOption> out = new ArrayList<>(); for (int i = 0; i < q.options().size(); i++) out.add(new CoreOption("path-option:" + q.questionId() + ":" + i, q.options().get(i).text())); if (q.includeOtherServicesOption()) out.add(new CoreOption("path-other:" + q.questionId(), "Другое")); return out; }
     private static List<CoreOption> toServiceOptions(List<ServiceInfo> services) { List<CoreOption> options = new ArrayList<>(services.stream().map(s -> new CoreOption("select-service:" + s.id(), s.name())).toList()); options.add(new CoreOption("select-service:confirm", "Подтвердить выбор")); return options; }
 
+    @Serdeable
     @Schema(name = "ChatInitRequest", description = "Запрос инициализации сессии чата. Позволяет передать человеко-читаемые данные пользователя (например, ФИО).")
     public record InitRequest(
             @Schema(description = "Стабильный внешний ID посетителя (если фронт его уже знает)", example = "crm-user-1024") String visitorId,
