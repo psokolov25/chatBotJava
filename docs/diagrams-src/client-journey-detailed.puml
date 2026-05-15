@@ -1,0 +1,69 @@
+@startuml
+skinparam BackgroundColor white
+title Детальный клиентский путь: от /start до уведомления о вызове
+
+actor Клиент
+participant Telegram
+participant "Бот" as Bot
+participant "Queue API" as Queue
+participant "Events\n(CometD/Kafka)" as Events
+
+Клиент -> Telegram: /start
+Telegram -> Bot: update(/start)
+Bot -> Bot: загрузка конфигурации филиалов
+
+Bot --> Telegram: приветствие + начало опроса
+
+group Опрос клиента перед оформлением визита
+  Bot --> Telegram: вопрос: формат обслуживания\n(онлайн/офлайн/первичный/повторный)
+  Клиент -> Telegram: выбор формата
+  Telegram -> Bot: callback(format)
+
+  Bot --> Telegram: вопрос: желаемая дата и интервал времени
+  Клиент -> Telegram: выбрать дату/интервал
+  Telegram -> Bot: callback(dateSlot)
+
+  Bot --> Telegram: вопрос: подтверждение контакта\n(телефон/комментарий)
+  Клиент -> Telegram: подтверждение/ввод
+  Telegram -> Bot: message/contact
+
+  Bot -> Bot: валидация ответов опросника
+end
+
+alt настроен один филиал
+  Bot -> Bot: выбор филиала по умолчанию
+else настроено несколько филиалов
+  Bot --> Telegram: показать клавиатуру филиалов
+  Клиент -> Telegram: выбрать филиал
+  Telegram -> Bot: callback(branchId)
+end
+
+Bot -> Queue: GET services(branchId)
+alt услуги доступны
+  Queue --> Bot: services[]
+  Bot --> Telegram: показать клавиатуру услуг
+  Клиент -> Telegram: выбрать услугу
+  Telegram -> Bot: callback(serviceId)
+else услуги недоступны / таймаут
+  Queue --> Bot: 4xx/5xx/timeout
+  Bot --> Telegram: объяснить проблему и подсказать повтор
+  return
+end
+
+Bot -> Queue: POST visit(branchId, entryPointId, serviceId, answers)
+alt визит создан
+  Queue --> Bot: ticketId + ticketNumber
+  Bot -> Bot: привязка chatId к контексту талона
+  Bot --> Telegram: отправить талон и дальнейшие шаги
+else ошибка создания визита
+  Queue --> Bot: error payload
+  Bot --> Telegram: временная ошибка и подсказка перезапуска
+  return
+end
+
+loop пока талон активен
+  Events -> Bot: VISIT_CALL / VISIT_RECALL
+  Bot -> Bot: проверка префикса талона и привязки чата
+  Bot --> Telegram: уведомить клиента о вызове/повторном вызове
+end
+@enduml

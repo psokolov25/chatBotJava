@@ -1,0 +1,28 @@
+@startuml
+skinparam BackgroundColor white
+title Обработка ошибок upstream (Queue API + Events)
+start
+:Получение update из Telegram;
+:Определение филиала и системы очереди;
+:Вызов Queue API;
+if (HTTP 2xx?) then (да)
+  :Разбор данных талона;
+  :Привязка талона к чату;
+  :Ответ клиенту с номером талона;
+else (нет)
+  :Классификация ошибки;
+  if (Auth/403?) then (да)
+    :Логирование безопасного контекста;
+    :Ответ: интеграция недоступна;
+  else (нет)
+    if (Timeout/5xx?) then (да)
+      :Логирование временного сбоя upstream;
+      :Ответ: временная ошибка;
+    else (валидация)
+      :Подсказка по корректировке филиала/услуги;
+    endif
+  endif
+endif
+:Продолжение polling событий (CometD/Kafka);
+stop
+@enduml
