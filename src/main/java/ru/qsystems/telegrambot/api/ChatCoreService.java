@@ -87,8 +87,11 @@ public class ChatCoreService {
             @Schema(description = "Стабильный внешний ID посетителя (если фронт его уже знает)", example = "crm-user-1024") String visitorId,
             @Schema(description = "Человеко-читаемое имя посетителя (ФИО)", example = "Иванов Иван Иванович") String customerName
     ) {}
+    @Serdeable
     public record CoreAction(String type, String value, String customerName) {}
+    @Serdeable
     public record CoreOption(String action, String label) {}
+    @Serdeable
     public record CoreResponse(String sessionId, String visitorId, String message, List<CoreOption> options, boolean multiSelect, String ticket) {}
     private static final class CoreSessionState { private String sessionId; private String visitorId; private String branchId; private String customerName = "web-client"; private final Map<String, String> pathAnswers = new HashMap<>(); private Set<String> pathMappedServiceIds = new HashSet<>(); private final Set<String> selectedServiceIds = new HashSet<>(); private Boolean pathAllowMultiChoice; }
 }
