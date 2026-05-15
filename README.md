@@ -86,36 +86,86 @@ docker compose logs -f telegram-orchestra-bot
 
 ![Runtime overview](docs/diagrams/runtime-overview.svg)
 ![Integration flow](docs/diagrams/integration-flow.svg)
-![Network flow](docs/diagrams/network-flow.svg)
-![CometD sequence](docs/diagrams/cometd-sequence.svg)
-![Ticket sequence](docs/diagrams/ticket-sequence.svg)
+![Dialog state machine](docs/diagrams/dialog-state-machine.svg)
+![Error handling flow](docs/diagrams/error-handling-flow.svg)
+![Client journey detailed](docs/diagrams/client-journey-detailed.svg)
+![REST+WS frontend flow](docs/diagrams/rest-ws-frontend-flow.svg)
 
-### 4.3 REST → WebSocket handoff для web-чата
-После `POST /api/chat/init` фронтенд получает `sessionId` и `wsEndpoint`, затем открывает `ws://<host>:<port><wsEndpoint>` и подписывается на адресные события посетителя.
+### 4.3 Принцип работы REST API + WebSocket для абстрактного frontend (web/mobile)
+Бэкенд разделяет взаимодействие на две части:
+1. **REST (`/api/chat/*`)** — синхронные шаги диалога (инициализация сессии, отправка действий/ответов, получение next question/options).
+2. **WebSocket (`/ws/events/{sessionId}`)** — асинхронные push-события по уже созданной сессии (вызов посетителя, повторный вызов, сервисные статусы канала).
 
-```mermaid
-sequenceDiagram
-    participant UI as Web Frontend
-    participant API as Chat REST API
-    participant WS as Chat WebSocket
-    participant EVT as Event Dispatcher
+Базовые принципы интеграции для любого frontend:
+- **Session-first:** сначала `POST /api/chat/init`, только потом открывать WS.
+- **Single source of truth:** `sessionId` из REST-ответа используется как ключ в URL WebSocket и для восстановления состояния UI.
+- **Resilience:** при реконнекте frontend повторно открывает тот же `sessionId`; при закрытии с ошибкой и истёкшей сессии — делает повторный `init`.
+- **Transport split:** бизнес-команды пользователя идут через REST, а события внешних систем (Kafka/CometD) приходят только через WS.
+- **UI-agnostic contract:** формат событий (`type`, `message`, `timestamp`, `sessionId`) одинаково применим для браузера и мобильного клиента.
 
-    UI->>API: POST /api/chat/init
-    API-->>UI: { sessionId, visitorId, wsEndpoint, ... }
-    UI->>WS: CONNECT /ws/events/{sessionId}
-    WS-->>UI: { type: "connected", sessionId }
-    EVT->>WS: VISIT_CALL / VISIT_RECALL
-    WS-->>UI: { type: "visit-event", message, timestamp }
+![REST+WS frontend flow](docs/diagrams/rest-ws-frontend-flow.svg)
+
+#### 4.3.1 Текстовые примеры работы с REST API
+**Пример 1: Инициализация сессии**
+```bash
+curl -X POST http://localhost:8080/api/chat/init \
+  -H "Content-Type: application/json" \
+  -d '{
+    "channel": "web",
+    "visitor": {
+      "externalId": "user-42",
+      "displayName": "Ivan"
+    }
+  }'
+```
+Ожидаемая идея ответа (поля могут отличаться по конкретной реализации):
+```json
+{
+  "sessionId": "2f1a5f4e-4af1-4e5b-8a2b-8e1f1bda8f2d",
+  "visitorId": "visitor-42",
+  "message": "Выберите филиал",
+  "options": [
+    {"id":"branch-1","label":"Центральный"},
+    {"id":"branch-2","label":"Северный"}
+  ],
+  "wsEndpoint": "/ws/events/2f1a5f4e-4af1-4e5b-8a2b-8e1f1bda8f2d"
+}
 ```
 
-```mermaid
-flowchart LR
-    A[Kafka/CometD event] --> B[VisitCallEventDispatcher]
-    B --> C[sessionForVisitor(visitorId)]
-    C --> D[ChatEventBroadcaster]
-    D --> E[/ws/events/{sessionId}/]
-    E --> F[Browser tabs/devices]
+**Пример 2: Отправка действия пользователя**
+```bash
+curl -X POST http://localhost:8080/api/chat/action \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "2f1a5f4e-4af1-4e5b-8a2b-8e1f1bda8f2d",
+    "action": "select_option",
+    "payload": {"optionId": "branch-1"}
+  }'
 ```
+Ожидаемая идея ответа: следующий вопрос/шаг сценария (`message`, `options`, `inputType`) или финальный результат (например, номер талона).
+
+#### 4.3.2 Текстовые примеры работы с WebSocket
+**Пример 1: Подключение к каналу событий**
+```text
+GET ws://localhost:8080/ws/events/2f1a5f4e-4af1-4e5b-8a2b-8e1f1bda8f2d
+```
+Первое служебное сообщение сервера:
+```json
+{"type":"connected","sessionId":"2f1a5f4e-4af1-4e5b-8a2b-8e1f1bda8f2d"}
+```
+
+**Пример 2: Push-событие вызова посетителя**
+```json
+{
+  "type": "visit-event",
+  "event": "VISIT_CALL",
+  "message": "Клиент A123, пройдите к окну 4",
+  "timestamp": "2026-05-15T10:20:31Z"
+}
+```
+
+**Пример 3: Ошибка при невалидной сессии**
+Если `sessionId` не найден, сервер закрывает сокет при открытии соединения (обычно с кодом policy violation). В этом случае frontend должен вызвать `POST /api/chat/init` повторно и открыть новое WS-соединение уже с новым `sessionId`.
 
 ## 5. Конфигурация (env + yml)
 ### 5.1 Где что настраивается
@@ -249,10 +299,11 @@ flowchart LR
 - `docs/diagrams-src/dialog-state-machine.puml`
 - `docs/diagrams-src/error-handling-flow.puml`
 - `docs/diagrams-src/client-journey-detailed.puml`
+- `docs/diagrams-src/rest-ws-frontend-flow.puml`
 
 ### 9.2 Генерация SVG
 ```bash
-plantuml -tsvg docs/diagrams-src/runtime-overview.puml docs/diagrams-src/integration-flow.puml docs/diagrams-src/dialog-state-machine.puml docs/diagrams-src/error-handling-flow.puml docs/diagrams-src/client-journey-detailed.puml -o ../diagrams
+plantuml -tsvg docs/diagrams-src/runtime-overview.puml docs/diagrams-src/integration-flow.puml docs/diagrams-src/dialog-state-machine.puml docs/diagrams-src/error-handling-flow.puml docs/diagrams-src/client-journey-detailed.puml docs/diagrams-src/rest-ws-frontend-flow.puml -o ../diagrams
 ```
 
 ### 9.3 Проверка
