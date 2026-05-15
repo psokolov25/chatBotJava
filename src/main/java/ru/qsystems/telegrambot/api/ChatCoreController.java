@@ -4,6 +4,7 @@ import io.micronaut.core.annotation.Nullable;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -37,6 +38,7 @@ public class ChatCoreController {
     }
 
     @Schema(name = "ChatActionRequest", description = "Запрос действия посетителя в рамках сессии")
+    @Serdeable
     public record ActionRequest(
             @Schema(description = "Legacy формат действия, например select-service:123", example = "select-service:123") String action,
             @Schema(description = "Тип действия", example = "select-service") String type,
