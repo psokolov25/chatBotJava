@@ -184,7 +184,9 @@ public class CometdSubscriptionService implements ApplicationEventListener<Appli
         JsonNode response = postWithRetry(client, cometdUri, key, payload, Duration.ofSeconds(20), "publish INIT for " + branchPrefix);
         JsonNode first = first(response);
         if (!first.path("successful").asBoolean(false)) {
-            throw new IOException("INIT publish failed: " + first.path("error").asText());
+            LOG.warn("CometD INIT publish was not acknowledged for prefix {}: {}", branchPrefix,
+                    first.path("error").asText("unknown error"));
+            return;
         }
         LOG.info("CometD INIT published for prefix {}", branchPrefix);
     }
