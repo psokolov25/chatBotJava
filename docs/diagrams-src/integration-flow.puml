@@ -1,16 +1,17 @@
 @startuml
-title Integration flow
+skinparam BackgroundColor white
+title Интеграционный поток
 start
-:Load config from env/application.yml;
-:Build branch map;
-if (Queue system?) then (Orchestra)
+:Загрузка конфига из env/application.yml;
+:Построение карты филиалов;
+if (Система очереди?) then (Orchestra)
   :REST + CometD;
 else (Axioma)
   :REST + Kafka;
 endif
-:Receive Telegram update;
-:Resolve branch + service;
-:Create visit;
-:Bind ticket to chat id;
+:Получение update из Telegram;
+:Определение филиала и услуги;
+:Создание визита;
+:Привязка талона к chat id;
 stop
 @enduml

@@ -1,0 +1,24 @@
+@startuml
+skinparam BackgroundColor white
+title Диалоговое состояние Telegram-бота
+
+[*] --> Idle
+
+state Idle {
+}
+
+Idle --> WaitingBranch : /start
+WaitingBranch --> WaitingService : выбран филиал
+WaitingService --> CreatingVisit : выбрана услуга
+CreatingVisit --> TicketBound : визит создан и талон привязан
+CreatingVisit --> ErrorState : ошибка/таймаут queue API
+
+TicketBound --> WaitingCallEvent : ожидание VISIT_CALL/VISIT_RECALL
+WaitingCallEvent --> Notified : событие получено
+Notified --> WaitingCallEvent : следующее событие
+
+ErrorState --> WaitingBranch : перезапуск диалога
+WaitingBranch --> Idle : /cancel
+WaitingService --> Idle : /cancel
+WaitingCallEvent --> Idle : /stop
+@enduml
