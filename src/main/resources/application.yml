@@ -1,0 +1,85 @@
+micronaut:
+  application:
+    name: telegram-orchestra-bot
+  server:
+    port: ${BOT_HTTP_PORT:8080}
+  http:
+    client:
+      read-timeout: 95s
+      connect-timeout: 10s
+
+logger:
+  levels:
+    ru.qsystems.telegrambot: ${LOG_LEVEL:INFO}
+    org.apache.kafka: WARN
+
+bot:
+  runtime:
+    client-path-yaml: client_path.yml
+    flow-order: BRANCH_FIRST
+    service-blacklist: 'Оплата услуг'
+    visit-call-template: '🔔 Талон {ticketId}! Подойдите к окну {servicePointName} (№{servicePointId}). Если номер уже обслужен — обратитесь к администратору.'
+    branch-visit-call-templates:
+      '6': 'Уважаемый {visitorName}! Вы вызваны к специалисту. Обратите внимание на ТВ-панель. Заранее спасибо!'
+      DUB: 'Уважаемый {visitorName}! Вы вызваны к специалисту, номер окна отображается на ТВ панели.'
+    branch-visit-call-templates-json: ''
+    multi-service-enabled: false
+    branch-multi-service-enabled:
+      '6': true
+      SBR: false
+    branch-multi-service-enabled-json: ''
+  telegram:
+    token: '8263375262:AAEGdPIg4wgBoQCC8lDB-tSNPdQycVocT2s'
+    api-url: 'https://api.telegram.org'
+    polling-enabled: true
+    polling-timeout-seconds: 30
+  queue:
+    system: orchestra
+    orchestra-url: 'http://192.168.0.38:8080/'
+    orchestra-login: superadmin
+    orchestra-password: ulan
+    axioma-url: 'http://192.168.8.40:8080/'
+    axioma-login: superadmin
+    axioma-password: ulan
+    branch-id: '6'
+    branch-name: 'Основное отделение'
+    branch-code: NTR
+    entry-point-id: '2'
+    branches:
+      - id: '6'
+        name: '💼 Нотариус'
+        prefix: NTR
+        entry_point_id: '2'
+        queue_system: orchestra
+        base_url: 'http://192.168.0.38:8080/'
+        login: superadmin
+        password: ulan
+      - id: '5'
+        name: '🏦 Сбербанк г. Минск'
+        prefix: SBR
+        entry_point_id: '2'
+        queue_system: orchestra
+        base_url: 'http://192.168.0.38:8080/'
+        login: superadmin
+        password: ulan
+      - id: 'cd842979-3dc1-4505-a1ae-9a92f0622da2'
+        name: '🏦 Банк "Дубна"'
+        prefix: DUB
+        entry_point_id: 'f7ff91a7-a2a7-4b90-adaf-b2d38a24e0f2'
+        queue_system: axioma
+        base_url: 'http://192.168.8.40:8080/'
+        login: superadmin
+        password: ulan
+    branches-json: ''
+  cometd:
+    enabled: true
+    init-channel: /events/INIT
+    connect-timeout-seconds: 90
+    watchdog-connect-timeout-seconds: 120
+  kafka:
+    enabled: true
+    topic: events
+    group-id: telegram-queue-bot
+    bootstrap-servers: '192.168.8.40:29092'
+    branch-bootstrap-servers: {}
+    branch-bootstrap-servers-json: ''

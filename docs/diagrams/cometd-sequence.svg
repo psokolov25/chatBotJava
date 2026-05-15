@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1580" viewBox="0 0 1400 1580" role="img" aria-label="CometD lifecycle: подписка, long-polling, VISIT_CALL и восстановление">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#0F172A"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#DC2626"/>
+    </marker>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#0F172A" flood-opacity="0.10"/>
+    </filter>
+    <linearGradient id="titleGradient" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="#FFFFFF"/>
+  <rect x="24" y="24" width="1352" height="1532" rx="28" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <text x="700.0" y="62" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="url(#titleGradient)" text-anchor="middle">CometD lifecycle: подписка, long-polling, VISIT_CALL и восстановление</text>
+  <rect x="100" y="110" width="160" height="82" rx="18" fill="#ECFDF5" stroke="#0D9488" stroke-width="1.6" filter="url(#cardShadow)"/>
+  <text x="180.0" y="138" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="180.0" dy="0">Queue Bot</tspan>
+  </text>
+  <text x="180.0" y="168" font-family="Arial, sans-serif" font-size="12" fill="#475569" font-weight="400" text-anchor="middle">
+    <tspan x="180.0" dy="0">main_bot.py</tspan>
+  </text>
+  <polyline points="180,192 180,1480" stroke="#334155" stroke-width="2.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 6"/>
+  <rect x="350" y="110" width="160" height="82" rx="18" fill="#F8FAFC" stroke="#64748B" stroke-width="1.6" filter="url(#cardShadow)"/>
+  <text x="430.0" y="138" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="430.0" dy="0">Watchdog</tspan>
+  </text>
+  <text x="430.0" y="168" font-family="Arial, sans-serif" font-size="12" fill="#475569" font-weight="400" text-anchor="middle">
+    <tspan x="430.0" dy="0">cometd_watchdog</tspan>
+  </text>
+  <polyline points="430,192 430,1480" stroke="#334155" stroke-width="2.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 6"/>
+  <rect x="620" y="110" width="160" height="82" rx="18" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+  <text x="700.0" y="138" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="700.0" dy="0">Orchestra</tspan>
+    <tspan x="700.0" dy="19">CometD</tspan>
+  </text>
+  <text x="700.0" y="168" font-family="Arial, sans-serif" font-size="12" fill="#475569" font-weight="400" text-anchor="middle">
+    <tspan x="700.0" dy="0">/cometd</tspan>
+  </text>
+  <polyline points="700,192 700,1480" stroke="#334155" stroke-width="2.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 6"/>
+  <rect x="910" y="110" width="160" height="82" rx="18" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+  <text x="990.0" y="138" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="990.0" dy="0">Telegram API</tspan>
+  </text>
+  <text x="990.0" y="168" font-family="Arial, sans-serif" font-size="12" fill="#475569" font-weight="400" text-anchor="middle">
+    <tspan x="990.0" dy="0">sendMessage</tspan>
+  </text>
+  <polyline points="990,192 990,1480" stroke="#334155" stroke-width="2.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 6"/>
+  <rect x="1160" y="110" width="160" height="82" rx="18" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.6" filter="url(#cardShadow)"/>
+  <text x="1240.0" y="138" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="1240.0" dy="0">Посетитель</tspan>
+  </text>
+  <text x="1240.0" y="168" font-family="Arial, sans-serif" font-size="12" fill="#475569" font-weight="400" text-anchor="middle">
+    <tspan x="1240.0" dy="0">Telegram UI</tspan>
+  </text>
+  <polyline points="1240,192 1240,1480" stroke="#334155" stroke-width="2.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 6"/>
+  <rect x="45" y="220" width="1310" height="355" rx="18" fill="#FFFFFF" fill-opacity="0.20" stroke="#94A3B8" stroke-width="1.4"/>
+  <rect x="45" y="220" width="420" height="30" rx="12" fill="#E2E8F0" stroke="#64748B" stroke-width="1.2"/>
+  <text x="60" y="241" font-family="Arial, sans-serif" font-size="14" fill="#0F172A" font-weight="700" text-anchor="start">
+    <tspan x="60" dy="0">1. Bootstrap Bayeux-сессии</tspan>
+  </text>
+  <polyline points="180,275 692,275" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="299.96" y="232.0" width="280.08000000000004" height="46" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="440.0" y="248" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="440.0" dy="0">POST /meta/handshake</tspan>
+    <tspan x="440.0" dy="15">supportedConnectionTypes=[long-polling]</tspan>
+  </text>
+  <polyline points="700,345 188,345" stroke="#0F172A" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+  <rect x="293.24" y="302.0" width="293.52000000000004" height="46" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="440.0" y="318" font-family="Arial, sans-serif" font-size="12" fill="#0F172A" font-weight="500" text-anchor="middle">
+    <tspan x="440.0" dy="0">successful=true, clientId, BAYEUX_BROWSER</tspan>
+    <tspan x="440.0" dy="15">cookie</tspan>
+  </text>
+  <rect x="340" y="390" width="720" height="86" rx="14" fill="#FFFFFF" fill-opacity="0.28" stroke="#64748B" stroke-width="1.8"/>
+  <text x="700" y="418" font-family="Arial, sans-serif" font-size="14" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="700" dy="0">loop для каждого branch.prefix из ORCHESTRA_BRANCHES</tspan>
+  </text>
+  <text x="700" y="448" font-family="Arial, sans-serif" font-size="13" fill="#0F172A" font-weight="400" text-anchor="middle">
+    <tspan x="700" dy="0">/meta/subscribe → /events/{prefix}/QVoiceLight; затем publish /events/INIT с</tspan>
+    <tspan x="700" dy="16">uid={prefix}:QVoiceLight</tspan>
+  </text>
+  <polyline points="180,520 692,520" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="320.12" y="484.5" width="239.76000000000002" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="440.0" y="500" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="440.0" dy="0">subscribe + INIT for every prefix</tspan>
+  </text>
+  <rect x="45" y="610" width="1310" height="400" rx="18" fill="#FFFFFF" fill-opacity="0.20" stroke="#94A3B8" stroke-width="1.4"/>
+  <rect x="45" y="610" width="420" height="30" rx="12" fill="#E2E8F0" stroke="#64748B" stroke-width="1.2"/>
+  <text x="60" y="631" font-family="Arial, sans-serif" font-size="14" fill="#0F172A" font-weight="700" text-anchor="start">
+    <tspan x="60" dy="0">2. Long-polling /meta/connect</tspan>
+  </text>
+  <polyline points="180,670 692,670" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="306.68" y="627.0" width="266.64" height="46" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="440.0" y="643" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="440.0" dy="0">POST /meta/connect</tspan>
+    <tspan x="440.0" dy="15">clientId, connectionType=long-polling</tspan>
+  </text>
+  <polyline points="700,745 188,745" stroke="#0F172A" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+  <rect x="350.36" y="702.0" width="179.28000000000003" height="46" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="440.0" y="718" font-family="Arial, sans-serif" font-size="12" fill="#0F172A" font-weight="500" text-anchor="middle">
+    <tspan x="440.0" dy="0">successful=true → update</tspan>
+    <tspan x="440.0" dy="15">last_connect_ok</tspan>
+  </text>
+  <rect x="320" y="780" width="760" height="130" rx="14" fill="#FFFFFF" fill-opacity="0.28" stroke="#64748B" stroke-width="1.8"/>
+  <text x="700" y="812" font-family="Arial, sans-serif" font-size="14" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="700" dy="0">alt response</tspan>
+  </text>
+  <text x="700" y="845" font-family="Arial, sans-serif" font-size="13" fill="#0F172A" font-weight="400" text-anchor="middle">
+    <tspan x="700" dy="0">1) /meta/connect OK: continue loop</tspan>
+    <tspan x="700" dy="22">2) reconnect advice / Unknown client: raise RuntimeError</tspan>
+    <tspan x="700" dy="22">3) application event: channel=/events/{prefix}/QVoiceLight</tspan>
+  </text>
+  <polyline points="700,950 188,950" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 5" marker-end="url(#arrow-blue)"/>
+  <rect x="350.36" y="914.5" width="179.28000000000003" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="440.0" y="930" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="440.0" dy="0">VISIT_CALL event payload</tspan>
+  </text>
+  <rect x="45" y="1045" width="1310" height="260" rx="18" fill="#FFFFFF" fill-opacity="0.20" stroke="#94A3B8" stroke-width="1.4"/>
+  <rect x="45" y="1045" width="420" height="30" rx="12" fill="#E2E8F0" stroke="#64748B" stroke-width="1.2"/>
+  <text x="60" y="1066" font-family="Arial, sans-serif" font-size="14" fill="#0F172A" font-weight="700" text-anchor="start">
+    <tspan x="60" dy="0">3. Обработка VISIT_CALL</tspan>
+  </text>
+  <rect x="80" y="1100" width="260" height="85" rx="14" fill="#FFFFFF" fill-opacity="0.28" stroke="#64748B" stroke-width="1.8"/>
+  <text x="210" y="1128" font-family="Arial, sans-serif" font-size="13" fill="#0F172A" font-weight="400" text-anchor="middle">
+    <tspan x="210" dy="0">parse JSON</tspan>
+    <tspan x="210" dy="16">extract TelegramCustomerId</tspan>
+  </text>
+  <rect x="365" y="1100" width="300" height="85" rx="14" fill="#F0FDF4" fill-opacity="0.28" stroke="#16A34A" stroke-width="1.6"/>
+  <text x="515" y="1128" font-family="Arial, sans-serif" font-size="13" fill="#14532D" font-weight="400" text-anchor="middle">
+    <tspan x="515" dy="0">check chat_id → allowed prefixes</tspan>
+    <tspan x="515" dy="16">USER_BRANCH_SUBSCRIPTIONS</tspan>
+  </text>
+  <rect x="690" y="1100" width="260" height="85" rx="14" fill="#FFFFFF" fill-opacity="0.28" stroke="#64748B" stroke-width="1.8"/>
+  <text x="820" y="1128" font-family="Arial, sans-serif" font-size="13" fill="#0F172A" font-weight="400" text-anchor="middle">
+    <tspan x="820" dy="0">resolve BranchConfig</tspan>
+    <tspan x="820" dy="16">render template override</tspan>
+  </text>
+  <polyline points="180,1230 982,1230" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="478.56" y="1187.0" width="212.88000000000002" height="46" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="585.0" y="1203" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="585.0" dy="0">sendMessage(chat_id, rendered</tspan>
+    <tspan x="585.0" dy="15">text)</tspan>
+  </text>
+  <polyline points="990,1290 1232,1290" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="1038.8" y="1254.5" width="152.4" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="1115.0" y="1270" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="1115.0" dy="0">уведомление о вызове</tspan>
+  </text>
+  <rect x="45" y="1340" width="1310" height="170" rx="18" fill="#FFFFFF" fill-opacity="0.20" stroke="#94A3B8" stroke-width="1.4"/>
+  <rect x="45" y="1340" width="440" height="30" rx="12" fill="#E2E8F0" stroke="#64748B" stroke-width="1.2"/>
+  <text x="60" y="1361" font-family="Arial, sans-serif" font-size="14" fill="#0F172A" font-weight="700" text-anchor="start">
+    <tspan x="60" dy="0">4. Восстановление после сбоя</tspan>
+  </text>
+  <polyline points="430,1395 188,1395" stroke="#0F172A" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <rect x="154.88" y="1344.5" width="300.24" height="61" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="305.0" y="1361" font-family="Arial, sans-serif" font-size="12" fill="#0F172A" font-weight="500" text-anchor="middle">
+    <tspan x="305.0" dy="0">check every 30 sec:</tspan>
+    <tspan x="305.0" dy="15">task.done() or stale last_connect_ok &gt; 120</tspan>
+    <tspan x="305.0" dy="15">sec</tspan>
+  </text>
+  <polyline points="430,1465 188,1465" stroke="#DC2626" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 5" marker-end="url(#arrow-red)"/>
+  <rect x="175.04" y="1429.5" width="259.92" height="31" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="305.0" y="1445" font-family="Arial, sans-serif" font-size="12" fill="#DC2626" font-weight="500" text-anchor="middle">
+    <tspan x="305.0" dy="0">cancel old task + start new cometd()</tspan>
+  </text>
+  <rect x="560" y="1430" width="360" height="64" rx="14" fill="#FFFBEB" fill-opacity="0.28" stroke="#F59E0B" stroke-width="1.6"/>
+  <text x="740" y="1455" font-family="Arial, sans-serif" font-size="13" fill="#92400E" font-weight="400" text-anchor="middle">
+    <tspan x="740" dy="0">controlled reconnect: retry 2s → 4s → ... →</tspan>
+    <tspan x="740" dy="16">60s</tspan>
+  </text>
+</svg>

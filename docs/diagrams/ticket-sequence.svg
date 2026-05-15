@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="Регистрация визита и адресное уведомление VISIT_CALL">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#0F172A"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#DC2626"/>
+    </marker>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#0F172A" flood-opacity="0.10"/>
+    </filter>
+    <linearGradient id="titleGradient" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="#FFFFFF"/>
+  <rect x="24" y="24" width="1452" height="2052" rx="28" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <text x="750.0" y="62" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="url(#titleGradient)" text-anchor="middle">Регистрация визита и адресное уведомление VISIT_CALL</text>
+  <rect x="40" y="110" width="160" height="82" rx="18" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.6" filter="url(#cardShadow)"/>
+  <text x="120.0" y="138" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="120.0" dy="0">Посетитель</tspan>
+  </text>
+  <text x="120.0" y="168" font-family="Arial, sans-serif" font-size="12" fill="#475569" font-weight="400" text-anchor="middle">
+    <tspan x="120.0" dy="0">Telegram UI</tspan>
+  </text>
+  <polyline points="120,192 120,2000" stroke="#334155" stroke-width="2.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 6"/>
+  <rect x="250" y="110" width="160" height="82" rx="18" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+  <text x="330.0" y="138" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="330.0" dy="0">Telegram API</tspan>
+  </text>
+  <text x="330.0" y="168" font-family="Arial, sans-serif" font-size="12" fill="#475569" font-weight="400" text-anchor="middle">
+    <tspan x="330.0" dy="0">updates/messages</tspan>
+  </text>
+  <polyline points="330,192 330,2000" stroke="#334155" stroke-width="2.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 6"/>
+  <rect x="480" y="110" width="160" height="82" rx="18" fill="#ECFDF5" stroke="#0D9488" stroke-width="1.6" filter="url(#cardShadow)"/>
+  <text x="560.0" y="138" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="560.0" dy="0">Bot / Aiogram</tspan>
+  </text>
+  <text x="560.0" y="168" font-family="Arial, sans-serif" font-size="12" fill="#475569" font-weight="400" text-anchor="middle">
+    <tspan x="560.0" dy="0">main_bot.py</tspan>
+  </text>
+  <polyline points="560,192 560,2000" stroke="#334155" stroke-width="2.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 6"/>
+  <rect x="710" y="110" width="160" height="82" rx="18" fill="#F5F3FF" stroke="#7C3AED" stroke-width="1.6" filter="url(#cardShadow)"/>
+  <text x="790.0" y="138" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="790.0" dy="0">BranchConfig</tspan>
+  </text>
+  <text x="790.0" y="168" font-family="Arial, sans-serif" font-size="12" fill="#475569" font-weight="400" text-anchor="middle">
+    <tspan x="790.0" dy="0">env → branches</tspan>
+  </text>
+  <polyline points="790,192 790,2000" stroke="#334155" stroke-width="2.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 6"/>
+  <rect x="930" y="110" width="160" height="82" rx="18" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+  <text x="1010.0" y="138" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="1010.0" dy="0">REST API</tspan>
+  </text>
+  <text x="1010.0" y="168" font-family="Arial, sans-serif" font-size="12" fill="#475569" font-weight="400" text-anchor="middle">
+    <tspan x="1010.0" dy="0">Orchestra</tspan>
+  </text>
+  <polyline points="1010,192 1010,2000" stroke="#334155" stroke-width="2.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 6"/>
+  <rect x="1150" y="110" width="160" height="82" rx="18" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.6" filter="url(#cardShadow)"/>
+  <text x="1230.0" y="138" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="1230.0" dy="0">CometD events</tspan>
+  </text>
+  <text x="1230.0" y="168" font-family="Arial, sans-serif" font-size="12" fill="#475569" font-weight="400" text-anchor="middle">
+    <tspan x="1230.0" dy="0">Orchestra</tspan>
+  </text>
+  <polyline points="1230,192 1230,2000" stroke="#334155" stroke-width="2.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 6"/>
+  <rect x="1320" y="110" width="160" height="82" rx="18" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.6" filter="url(#cardShadow)"/>
+  <text x="1400.0" y="138" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="1400.0" dy="0">Оператор</tspan>
+  </text>
+  <text x="1400.0" y="168" font-family="Arial, sans-serif" font-size="12" fill="#475569" font-weight="400" text-anchor="middle">
+    <tspan x="1400.0" dy="0">рабочее место</tspan>
+  </text>
+  <polyline points="1400,192 1400,2000" stroke="#334155" stroke-width="2.9" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 6"/>
+  <rect x="45" y="220" width="1410" height="250" rx="18" fill="#FFFFFF" fill-opacity="0.20" stroke="#94A3B8" stroke-width="1.4"/>
+  <rect x="45" y="220" width="420" height="30" rx="12" fill="#E2E8F0" stroke="#64748B" stroke-width="1.2"/>
+  <text x="60" y="241" font-family="Arial, sans-serif" font-size="14" fill="#0F172A" font-weight="700" text-anchor="start">
+    <tspan x="60" dy="0">1. Старт runtime</tspan>
+  </text>
+  <polyline points="560,270 782,270" stroke="#0F172A" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <rect x="582.0" y="227.0" width="186.00000000000003" height="46" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="675.0" y="243" font-family="Arial, sans-serif" font-size="12" fill="#0F172A" font-weight="500" text-anchor="middle">
+    <tspan x="675.0" dy="0">load ORCHESTRA_BRANCHES /</tspan>
+    <tspan x="675.0" dy="15">fallback</tspan>
+  </text>
+  <polyline points="790,330 568,330" stroke="#0F172A" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+  <rect x="555.12" y="287.0" width="239.76000000000002" height="46" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="675.0" y="303" font-family="Arial, sans-serif" font-size="12" fill="#0F172A" font-weight="500" text-anchor="middle">
+    <tspan x="675.0" dy="0">BranchConfig[]: id, name, prefix,</tspan>
+    <tspan x="675.0" dy="15">entryPointId</tspan>
+  </text>
+  <polyline points="560,390 338,390" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="378.88" y="347.0" width="132.24" height="46" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="445.0" y="363" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="445.0" dy="0">start polling,</tspan>
+    <tspan x="445.0" dy="15">skip_updates=True</tspan>
+  </text>
+  <polyline points="560,450 1222,450" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="728.0799999999999" y="407.0" width="333.84000000000003" height="46" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="895.0" y="423" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="895.0" dy="0">background CometD task: handshake / subscribe /</tspan>
+    <tspan x="895.0" dy="15">INIT / connect</tspan>
+  </text>
+  <rect x="45" y="510" width="1410" height="440" rx="18" fill="#FFFFFF" fill-opacity="0.20" stroke="#94A3B8" stroke-width="1.4"/>
+  <rect x="45" y="510" width="420" height="30" rx="12" fill="#E2E8F0" stroke="#64748B" stroke-width="1.2"/>
+  <text x="60" y="531" font-family="Arial, sans-serif" font-size="14" fill="#0F172A" font-weight="700" text-anchor="start">
+    <tspan x="60" dy="0">2. Выбор отделения и услуги</tspan>
+  </text>
+  <polyline points="120,565 322,565" stroke="#0F172A" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <rect x="195.84" y="529.5" width="58.32000000000001" height="31" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="225.0" y="545" font-family="Arial, sans-serif" font-size="12" fill="#0F172A" font-weight="500" text-anchor="middle">
+    <tspan x="225.0" dy="0">/start</tspan>
+  </text>
+  <polyline points="330,625 552,625" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="392.32" y="589.5" width="105.36000000000001" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="445.0" y="605" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="445.0" dy="0">update /start</tspan>
+  </text>
+  <polyline points="560,685 338,685" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="355.36" y="649.5" width="179.28000000000003" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="445.0" y="665" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="445.0" dy="0">main menu: [Взять талон]</tspan>
+  </text>
+  <polyline points="120,745 322,745" stroke="#0F172A" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <rect x="148.8" y="709.5" width="152.4" height="31" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="225.0" y="725" font-family="Arial, sans-serif" font-size="12" fill="#0F172A" font-weight="500" text-anchor="middle">
+    <tspan x="225.0" dy="0">callback take-ticket</tspan>
+  </text>
+  <polyline points="330,805 552,805" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="385.6" y="769.5" width="118.80000000000001" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="445.0" y="785" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="445.0" dy="0">selected action</tspan>
+  </text>
+  <rect x="370" y="842" width="420" height="74" rx="14" fill="#FFFFFF" fill-opacity="0.28" stroke="#64748B" stroke-width="1.8"/>
+  <text x="580" y="872" font-family="Arial, sans-serif" font-size="13" fill="#0F172A" font-weight="400" text-anchor="middle">
+    <tspan x="580" dy="0">single branch: выбрать автоматически</tspan>
+    <tspan x="580" dy="16">multi-branch: показать keyboard отделений</tspan>
+  </text>
+  <polyline points="560,955 1002,955" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="631.0" y="912.0" width="308" height="46" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="785.0" y="928" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="785.0" dy="0">GET</tspan>
+    <tspan x="785.0" dy="15">/rest/servicepoint/branches/{branchId}/services/</tspan>
+  </text>
+  <polyline points="1010,1015 568,1015" stroke="#0F172A" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+  <rect x="742.4" y="979.5" width="85.2" height="31" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="785.0" y="995" font-family="Arial, sans-serif" font-size="12" fill="#0F172A" font-weight="500" text-anchor="middle">
+    <tspan x="785.0" dy="0">services[]</tspan>
+  </text>
+  <rect x="430" y="1038" width="260" height="56" rx="14" fill="#FFFFFF" fill-opacity="0.28" stroke="#64748B" stroke-width="1.8"/>
+  <text x="560" y="1062" font-family="Arial, sans-serif" font-size="13" fill="#0F172A" font-weight="400" text-anchor="middle">
+    <tspan x="560" dy="0">filter SERVICE_BLACKLIST</tspan>
+    <tspan x="560" dy="16">build services keyboard</tspan>
+  </text>
+  <polyline points="560,1125 338,1125" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="352.0" y="1089.5" width="186.00000000000003" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="445.0" y="1105" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="445.0" dy="0">inline keyboard: services</tspan>
+  </text>
+  <rect x="45" y="1170" width="1410" height="410" rx="18" fill="#FFFFFF" fill-opacity="0.20" stroke="#94A3B8" stroke-width="1.4"/>
+  <rect x="45" y="1170" width="420" height="30" rx="12" fill="#E2E8F0" stroke="#64748B" stroke-width="1.2"/>
+  <text x="60" y="1191" font-family="Arial, sans-serif" font-size="14" fill="#0F172A" font-weight="700" text-anchor="start">
+    <tspan x="60" dy="0">3. Создание визита</tspan>
+  </text>
+  <polyline points="120,1225 322,1225" stroke="#0F172A" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <rect x="155.51999999999998" y="1189.5" width="138.96" height="31" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="225.0" y="1205" font-family="Arial, sans-serif" font-size="12" fill="#0F172A" font-weight="500" text-anchor="middle">
+    <tspan x="225.0" dy="0">callback serviceId</tspan>
+  </text>
+  <polyline points="330,1285 552,1285" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="375.52" y="1249.5" width="138.96" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="445.0" y="1265" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="445.0" dy="0">selected serviceId</tspan>
+  </text>
+  <polyline points="560,1345 1002,1345" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="596.0" y="1294.5" width="378" height="61" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="785.0" y="1311" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="785.0" dy="0">POST</tspan>
+    <tspan x="785.0" dy="15">/entrypoint/branches/{branchId}/entryPoints/{entryPointId}/visits</tspan>
+    <tspan x="785.0" dy="15">+ TelegramCustomerId</tspan>
+  </text>
+  <polyline points="1010,1405 568,1405" stroke="#0F172A" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+  <rect x="698.72" y="1369.5" width="172.56" height="31" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="785.0" y="1385" font-family="Arial, sans-serif" font-size="12" fill="#0F172A" font-weight="500" text-anchor="middle">
+    <tspan x="785.0" dy="0">visit.ticketId / ticket</tspan>
+  </text>
+  <rect x="410" y="1438" width="300" height="58" rx="14" fill="#F0FDF4" fill-opacity="0.28" stroke="#16A34A" stroke-width="1.6"/>
+  <text x="560" y="1463" font-family="Arial, sans-serif" font-size="13" fill="#14532D" font-weight="400" text-anchor="middle">
+    <tspan x="560" dy="0">save chat_id → branch prefix</tspan>
+    <tspan x="560" dy="16">USER_BRANCH_SUBSCRIPTIONS</tspan>
+  </text>
+  <polyline points="560,1515 338,1515" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="372.15999999999997" y="1479.5" width="145.68" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="445.0" y="1495" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="445.0" dy="0">Ваш талон: {ticket}</tspan>
+  </text>
+  <polyline points="330,1575 128,1575" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="175.68" y="1539.5" width="98.64000000000001" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="225.0" y="1555" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="225.0" dy="0">номер талона</tspan>
+  </text>
+  <rect x="45" y="1625" width="1410" height="350" rx="18" fill="#FFFFFF" fill-opacity="0.20" stroke="#94A3B8" stroke-width="1.4"/>
+  <rect x="45" y="1625" width="420" height="30" rx="12" fill="#E2E8F0" stroke="#64748B" stroke-width="1.2"/>
+  <text x="60" y="1646" font-family="Arial, sans-serif" font-size="14" fill="#0F172A" font-weight="700" text-anchor="start">
+    <tspan x="60" dy="0">4. Вызов посетителя</tspan>
+  </text>
+  <polyline points="1400,1685 1018,1685" stroke="#0F172A" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+  <rect x="1118.72" y="1649.5" width="172.56" height="31" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="1205.0" y="1665" font-family="Arial, sans-serif" font-size="12" fill="#0F172A" font-weight="500" text-anchor="middle">
+    <tspan x="1205.0" dy="0">оператор вызывает визит</tspan>
+  </text>
+  <polyline points="1010,1745 1222,1745" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="1050.52" y="1709.5" width="138.96" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="1120.0" y="1725" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="1120.0" dy="0">publish VISIT_CALL</tspan>
+  </text>
+  <polyline points="1230,1805 568,1805" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 5" marker-end="url(#arrow-blue)"/>
+  <rect x="724.72" y="1762.0" width="340.56000000000006" height="46" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="895.0" y="1778" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="895.0" dy="0">/events/{prefix}/QVoiceLight, E.evnt=VISIT_CALL,</tspan>
+    <tspan x="895.0" dy="15">prm.TelegramCustomerId</tspan>
+  </text>
+  <rect x="410" y="1830" width="300" height="74" rx="14" fill="#FFFFFF" fill-opacity="0.28" stroke="#64748B" stroke-width="1.8"/>
+  <text x="560" y="1858" font-family="Arial, sans-serif" font-size="13" fill="#0F172A" font-weight="400" text-anchor="middle">
+    <tspan x="560" dy="0">validate chat_id + branch prefix</tspan>
+    <tspan x="560" dy="16">render template / override</tspan>
+  </text>
+  <polyline points="560,1930 338,1930" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="316.0" y="1894.5" width="258" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="445.0" y="1910" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="445.0" dy="0">sendMessage(chat_id=TelegramCustomerId)</tspan>
+  </text>
+  <polyline points="330,1990 128,1990" stroke="#2563EB" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+  <rect x="135.35999999999999" y="1954.5" width="179.28000000000003" height="31" rx="8" fill="#EFF6FF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="225.0" y="1970" font-family="Arial, sans-serif" font-size="12" fill="#2563EB" font-weight="500" text-anchor="middle">
+    <tspan x="225.0" dy="0">персональное уведомление</tspan>
+  </text>
+  <rect x="70" y="2030" width="1360" height="44" rx="18" fill="#FFFFFF" stroke="#64748B" stroke-width="1.8"/>
+  <text x="750" y="2058" font-family="Arial, sans-serif" font-size="15" fill="#0F172A" font-weight="700" text-anchor="middle">
+    <tspan x="750" dy="0">Ключевой результат: визит создаётся в entryPoint выбранного филиала, а VISIT_CALL отправляется только владельцу TelegramCustomerId.</tspan>
+  </text>
+</svg>

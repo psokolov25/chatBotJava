@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  telegram-orchestra-bot:
+    build: .
+    container_name: telegram-orchestra-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MICRONAUT_CONFIG_FILES: /app/application.yml
+      CLIENT_PATH_YAML: /app/client_path.yml
+    ports:
+      - "8080:8080"
