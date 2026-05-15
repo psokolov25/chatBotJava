@@ -55,9 +55,11 @@ public class TelegramPollingService implements ApplicationEventListener<Applicat
 
     private void pollLoop() {
         long offset = 0;
+        long retryDelayMs = 1_000;
         while (running.get() && !Thread.currentThread().isInterrupted()) {
             try {
                 JsonNode updates = telegramApiClient.getUpdates(offset);
+                retryDelayMs = 1_000;
                 if (updates.isArray()) {
                     for (JsonNode update : updates) {
                         offset = Math.max(offset, update.path("update_id").asLong() + 1);
@@ -67,8 +69,9 @@ public class TelegramPollingService implements ApplicationEventListener<Applicat
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } catch (Exception e) {
-                LOG.warn("Telegram polling failed, retry in 3s: {}", e.getMessage(), e);
-                sleep(3000);
+                LOG.warn("Telegram polling failed, retry in {}ms: {}", retryDelayMs, e.getMessage(), e);
+                sleep(retryDelayMs);
+                retryDelayMs = Math.min(retryDelayMs * 2, 30_000);
             }
         }
     }

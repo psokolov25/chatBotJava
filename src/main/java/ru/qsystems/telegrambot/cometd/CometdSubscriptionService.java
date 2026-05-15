@@ -140,7 +140,7 @@ public class CometdSubscriptionService implements ApplicationEventListener<Appli
                 "supportedConnectionTypes", List.of("long-polling"),
                 "id", "0"
         ));
-        JsonNode response = post(client, cometdUri, key, payload, Duration.ofSeconds(20));
+        JsonNode response = postWithRetry(client, cometdUri, key, payload, Duration.ofSeconds(20), "handshake");
         JsonNode handshake = first(response);
         if (!handshake.path("successful").asBoolean(false)) {
             throw new IOException("Handshake failed: " + handshake.path("error").asText());
@@ -161,7 +161,7 @@ public class CometdSubscriptionService implements ApplicationEventListener<Appli
                 "subscription", channel,
                 "id", id
         ));
-        JsonNode response = post(client, cometdUri, key, payload, Duration.ofSeconds(20));
+        JsonNode response = postWithRetry(client, cometdUri, key, payload, Duration.ofSeconds(20), "subscribe " + channel);
         if (!first(response).path("successful").asBoolean(false)) {
             throw new IOException("Subscribe failed: " + first(response).path("error").asText());
         }
@@ -181,7 +181,11 @@ public class CometdSubscriptionService implements ApplicationEventListener<Appli
                 "data", publishData,
                 "id", id
         ));
-        post(client, cometdUri, key, payload, Duration.ofSeconds(20));
+        JsonNode response = postWithRetry(client, cometdUri, key, payload, Duration.ofSeconds(20), "publish INIT for " + branchPrefix);
+        JsonNode first = first(response);
+        if (!first.path("successful").asBoolean(false)) {
+            throw new IOException("INIT publish failed: " + first.path("error").asText());
+        }
         LOG.info("CometD INIT published for prefix {}", branchPrefix);
     }
 
@@ -202,6 +206,8 @@ public class CometdSubscriptionService implements ApplicationEventListener<Appli
                 for (JsonNode msg : response) {
                     handleMessage(msg, subscribedChannels);
                 }
+            } else {
+                throw new IOException("Unexpected CometD connect response: " + response);
             }
         }
     }
@@ -251,6 +257,24 @@ public class CometdSubscriptionService implements ApplicationEventListener<Appli
             throw new IOException("CometD HTTP " + response.statusCode() + ": " + response.body());
         }
         return objectMapper.readTree(response.body());
+    }
+
+    private JsonNode postWithRetry(HttpClient client, URI uri, ConnectionKey key, Object payload, Duration timeout, String operation)
+            throws IOException, InterruptedException {
+        long retryDelayMs = 1_000;
+        while (running.get() && !Thread.currentThread().isInterrupted()) {
+            try {
+                return post(client, uri, key, payload, timeout);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw e;
+            } catch (IOException e) {
+                LOG.warn("CometD {} failed for {}, retry in {}ms: {}", operation, key.masked(), retryDelayMs, e.getMessage());
+                sleep(retryDelayMs);
+                retryDelayMs = Math.min(retryDelayMs * 2, 30_000);
+            }
+        }
+        throw new IOException("CometD " + operation + " interrupted by shutdown");
     }
 
     private static JsonNode first(JsonNode node) throws IOException {
