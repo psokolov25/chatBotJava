@@ -116,18 +116,21 @@ public class AxiomaKafkaConsumerService implements ApplicationEventListener<Appl
     }
 
     private void consumeForever(String bootstrapServers, String groupId) {
+        long retryDelayMs = 2_000;
         while (running.get() && !Thread.currentThread().isInterrupted()) {
             try (KafkaConsumer<String, String> consumer = createConsumer(bootstrapServers, groupId)) {
                 consumer.subscribe(List.of(properties.getTopic()));
                 LOG.info("Axioma Kafka consumer started. topic={} servers={} groupId={}", properties.getTopic(), bootstrapServers, groupId);
+                retryDelayMs = 2_000;
                 while (running.get() && !Thread.currentThread().isInterrupted()) {
                     for (ConsumerRecord<String, String> record : consumer.poll(Duration.ofSeconds(1))) {
                         handleRecord(record);
                     }
                 }
             } catch (Exception e) {
-                LOG.warn("Axioma Kafka consumer failed, reconnect in 5s: {}", e.getMessage(), e);
-                sleep(5000);
+                LOG.warn("Axioma Kafka consumer failed, reconnect in {}ms: {}", retryDelayMs, e.getMessage(), e);
+                sleep(retryDelayMs);
+                retryDelayMs = Math.min(retryDelayMs * 2, 60_000);
             }
         }
     }

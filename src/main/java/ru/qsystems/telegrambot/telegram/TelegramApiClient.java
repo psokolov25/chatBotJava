@@ -49,36 +49,45 @@ public class TelegramApiClient {
     }
 
     public void sendMessage(long chatId, String text, Object replyMarkup) {
-        try {
-            Map<String, Object> body = replyMarkup == null
-                    ? Map.of("chat_id", chatId, "text", text)
-                    : Map.of("chat_id", chatId, "text", text, "reply_markup", replyMarkup);
-            post("sendMessage", body);
-        } catch (Exception e) {
-            LOG.warn("Telegram sendMessage failed: {}", e.getMessage(), e);
-        }
+        Map<String, Object> body = replyMarkup == null
+                ? Map.of("chat_id", chatId, "text", text)
+                : Map.of("chat_id", chatId, "text", text, "reply_markup", replyMarkup);
+        postWithReconnect("sendMessage", body, true);
     }
 
     public void answerCallbackQuery(String callbackQueryId) {
         if (callbackQueryId == null || callbackQueryId.isBlank()) {
             return;
         }
-        try {
-            post("answerCallbackQuery", Map.of("callback_query_id", callbackQueryId));
-        } catch (Exception e) {
-            LOG.debug("Telegram answerCallbackQuery failed: {}", e.getMessage());
-        }
+        postWithReconnect("answerCallbackQuery", Map.of("callback_query_id", callbackQueryId), false);
     }
 
     public void editMessageReplyMarkup(long chatId, long messageId, Object replyMarkup) {
-        try {
-            post("editMessageReplyMarkup", Map.of(
-                    "chat_id", chatId,
-                    "message_id", messageId,
-                    "reply_markup", replyMarkup
-            ));
-        } catch (Exception e) {
-            LOG.debug("Telegram editMessageReplyMarkup failed: {}", e.getMessage());
+        postWithReconnect("editMessageReplyMarkup", Map.of(
+                "chat_id", chatId,
+                "message_id", messageId,
+                "reply_markup", replyMarkup
+        ), false);
+    }
+
+    private void postWithReconnect(String method, Object body, boolean warnLevel) {
+        long retryDelayMs = 1_000;
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                post(method, body);
+                return;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            } catch (Exception e) {
+                if (warnLevel) {
+                    LOG.warn("Telegram {} failed, retry in {}ms: {}", method, retryDelayMs, e.getMessage());
+                } else {
+                    LOG.debug("Telegram {} failed, retry in {}ms: {}", method, retryDelayMs, e.getMessage());
+                }
+                sleep(retryDelayMs);
+                retryDelayMs = Math.min(retryDelayMs * 2, 30_000);
+            }
         }
     }
 
@@ -106,5 +115,13 @@ public class TelegramApiClient {
                 : properties.getApiUrl();
         String token = URLEncoder.encode(properties.getToken(), StandardCharsets.UTF_8);
         return URI.create(base + "/bot" + token + "/" + method);
+    }
+
+    private static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
