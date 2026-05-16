@@ -17,17 +17,17 @@ Bot -> Bot: загрузка конфигурации филиалов
 Bot --> Telegram: приветствие + начало опроса
 
 group Опрос клиента перед оформлением визита
-  Bot --> Telegram: вопрос: формат обслуживания\n(онлайн/офлайн/первичный/повторный)
-  Клиент -> Telegram: выбор формата
-  Telegram -> Bot: callback(format)
+  Bot --> Telegram: Вопрос1
+  Клиент -> Telegram: Ответ1
+  Telegram -> Bot: callback/message(answer1)
 
-  Bot --> Telegram: вопрос: желаемая дата и интервал времени
-  Клиент -> Telegram: выбрать дату/интервал
-  Telegram -> Bot: callback(dateSlot)
+  Bot --> Telegram: Вопрос2
+  Клиент -> Telegram: Ответ2
+  Telegram -> Bot: callback/message(answer2)
 
-  Bot --> Telegram: вопрос: подтверждение контакта\n(телефон/комментарий)
-  Клиент -> Telegram: подтверждение/ввод
-  Telegram -> Bot: message/contact
+  Bot --> Telegram: ВопросN
+  Клиент -> Telegram: ОтветN
+  Telegram -> Bot: callback/message(answerN)
 
   Bot -> Bot: валидация ответов опросника
 end
