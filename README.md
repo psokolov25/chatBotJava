@@ -360,3 +360,47 @@ plantuml -tsvg docs/diagrams-src/runtime-overview.puml docs/diagrams-src/integra
 ![Сетевое взаимодействие](docs/diagrams/network-flow.svg)
 ![Последовательность CometD](docs/diagrams/cometd-sequence.svg)
 ![Последовательность регистрации талона](docs/diagrams/ticket-sequence.svg)
+
+## 11. Пакеты Groovy-скриптов (zip + manifest + versioning)
+Поддержан каталог пакетов `script-packages/` (настраивается `bot.runtime.script-packages-dir` / `SCRIPT_PACKAGES_DIR`).
+
+Формат пакета: zip-архив с файлами:
+- `manifest.yml` — манифест (id пакета, версия, список скриптов, описания);
+- `scripts/*.groovy` — скрипты;
+- `metadata/*.yml` — метаданные скриптов;
+- `params/*.yml` — параметры/дефолты.
+
+### Пример `manifest.yml`
+```yaml
+id: prereg-integration
+version: 1.2.0
+scripts:
+  - id: prereg-pin-check
+    path: scripts/prereg_pin.groovy
+    metadata: metadata/prereg_pin.yml
+    params: params/prereg_pin.yml
+    dependencies:
+      - lib/crm-client.jar
+```
+
+Поддержка зависимостей в пакете:
+- в архив можно добавить `lib/*.jar`;
+- для конкретного скрипта зависимости задаются в `manifest.yml -> scripts[].dependencies`;
+- если `dependencies` не указаны, используются все `lib/*.jar` из архива.
+
+
+При старте сервиса архивы из папки загружаются в реестр. Для одинакового `script id` выбирается более новая версия из манифеста.
+
+
+### 11.1 Примеры структуры пакетов на файловой системе
+Для удобства добавлены готовые примеры **в распакованном виде** (та же структура, что и внутри zip):
+- `script-packages/examples/prereg-v1/`
+- `script-packages/examples/crm-segmentation-v2/`
+
+Каждый пример содержит:
+- `manifest.yml`
+- `scripts/*.groovy`
+- `metadata/*.yml`
+- `params/*.yml`
+
+Эти папки можно архивировать в zip и положить в директорию `script-packages-dir` для загрузки на старте приложения.

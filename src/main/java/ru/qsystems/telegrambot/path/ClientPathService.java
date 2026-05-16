@@ -130,11 +130,14 @@ public class ClientPathService {
             }
             Map<String, Object> question = (Map<String, Object>) rawQuestion;
             String text = stringValue(question.get("text"));
+            PathInputType inputType = PathInputType.from(stringValue(question.get("input_type")));
+            String inputKey = blankToNull(stringValue(question.get("input_key")));
+            String script = blankToNull(stringValue(question.get("script")));
+            String scriptId = blankToNull(stringValue(question.get("script_id")));
             Object optionsRaw = question.get("options");
-            if (text.isBlank() || !(optionsRaw instanceof List<?> rawOptions)) {
-                continue;
-            }
+            if (text.isBlank()) continue;
             List<PathOption> options = new ArrayList<>();
+            List<?> rawOptions = optionsRaw instanceof List<?> ro ? ro : List.of();
             for (Object optionRaw : rawOptions) {
                 if (!(optionRaw instanceof Map<?, ?> rawOption)) {
                     continue;
@@ -152,14 +155,17 @@ public class ClientPathService {
                         MultiServicesAction.from(stringValue(option.get("multi_services_action")))
                 ));
             }
-            if (!options.isEmpty()) {
-                questions.put(questionId, new PathQuestion(
-                        questionId,
-                        text,
-                        List.copyOf(options),
-                        Boolean.TRUE.equals(question.get("include_other_services_option"))
-                ));
-            }
+            if (inputType == PathInputType.OPTION && options.isEmpty()) continue;
+            questions.put(questionId, new PathQuestion(
+                    questionId,
+                    text,
+                    List.copyOf(options),
+                    Boolean.TRUE.equals(question.get("include_other_services_option")),
+                    inputType,
+                    inputKey,
+                    script,
+                    scriptId
+            ));
         }
         if (!questions.containsKey(rootQuestionId)) {
             return Optional.empty();

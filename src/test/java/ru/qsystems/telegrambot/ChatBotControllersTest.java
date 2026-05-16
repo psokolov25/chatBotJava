@@ -9,6 +9,7 @@ import ru.qsystems.telegrambot.config.TelegramProperties;
 import ru.qsystems.telegrambot.model.BranchConfig;
 import ru.qsystems.telegrambot.model.QueueSystem;
 import ru.qsystems.telegrambot.path.ClientPathService;
+import ru.qsystems.telegrambot.path.PathScriptExecutor;
 import ru.qsystems.telegrambot.queue.QueueGateway;
 import ru.qsystems.telegrambot.queue.ServiceFilter;
 import ru.qsystems.telegrambot.telegram.*;
@@ -55,6 +56,7 @@ class ChatBotControllersTest {
         KeyboardFactory keyboardFactory = mock(KeyboardFactory.class);
         UserStateStore stateStore = new UserStateStore();
         ClientPathService pathService = mock(ClientPathService.class);
+        PathScriptExecutor pathScriptExecutor = mock(PathScriptExecutor.class);
 
         when(branches.branchSelectionFirst()).thenReturn(true);
         when(branches.branches()).thenReturn(List.of(
@@ -64,7 +66,7 @@ class ChatBotControllersTest {
         when(keyboardFactory.chooseBranchButton()).thenReturn(Map.of("inline_keyboard", List.of()));
 
         TelegramUpdateHandler handler = new TelegramUpdateHandler(
-                telegram, branches, queueGateway, serviceFilter, keyboardFactory, stateStore, pathService
+                telegram, branches, queueGateway, serviceFilter, keyboardFactory, stateStore, pathService, pathScriptExecutor
         );
 
         ObjectNode update = MAPPER.createObjectNode();
@@ -88,11 +90,12 @@ class ChatBotControllersTest {
         KeyboardFactory keyboardFactory = mock(KeyboardFactory.class);
         UserStateStore stateStore = new UserStateStore();
         ClientPathService pathService = mock(ClientPathService.class);
+        PathScriptExecutor pathScriptExecutor = mock(PathScriptExecutor.class);
 
         when(branches.byId("404")).thenReturn(java.util.Optional.empty());
 
         TelegramUpdateHandler handler = new TelegramUpdateHandler(
-                telegram, branches, queueGateway, serviceFilter, keyboardFactory, stateStore, pathService
+                telegram, branches, queueGateway, serviceFilter, keyboardFactory, stateStore, pathService, pathScriptExecutor
         );
 
         UserState state = stateStore.get(55L);

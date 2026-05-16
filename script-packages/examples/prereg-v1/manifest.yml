@@ -1,0 +1,8 @@
+id: prereg-integration
+version: 1.0.0
+description: Предзапись по PIN и создание визита
+scripts:
+  - id: prereg-pin-check
+    path: scripts/prereg_pin_check.groovy
+    metadata: metadata/prereg_pin_check.yml
+    params: params/prereg_pin_check.yml

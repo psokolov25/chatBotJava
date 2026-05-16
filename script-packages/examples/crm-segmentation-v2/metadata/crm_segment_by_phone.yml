@@ -1,0 +1,8 @@
+id: crm-segment-by-phone
+name: CRM сегментация по телефону
+owner: crm-team
+model: rule-based
+channelSupport:
+  - telegram
+  - rest
+purpose: Определяет клиентский сегмент и подбирает набор услуг.

@@ -6,6 +6,10 @@ public record PathQuestion(
         String questionId,
         String text,
         List<PathOption> options,
-        boolean includeOtherServicesOption
+        boolean includeOtherServicesOption,
+        PathInputType inputType,
+        String inputKey,
+        String script,
+        String scriptId
 ) {
 }

@@ -9,6 +9,7 @@ import java.util.Map;
 @ConfigurationProperties("bot.runtime")
 public class BotRuntimeProperties {
     private String clientPathYaml = "client_path.yml";
+    private String scriptPackagesDir = "script-packages";
     private String flowOrder = "ACTION_FIRST";
     private String serviceBlacklist = "Оплата услуг";
     private String visitCallTemplate = "🔔 {visitorName}, ваш талон {ticketId}! Подойдите к окну {servicePointName}.";
@@ -24,6 +25,15 @@ public class BotRuntimeProperties {
 
     public void setClientPathYaml(String clientPathYaml) {
         this.clientPathYaml = clientPathYaml;
+    }
+
+
+    public String getScriptPackagesDir() {
+        return Env.string("SCRIPT_PACKAGES_DIR", scriptPackagesDir);
+    }
+
+    public void setScriptPackagesDir(String scriptPackagesDir) {
+        this.scriptPackagesDir = scriptPackagesDir;
     }
 
     public String getFlowOrder() {
