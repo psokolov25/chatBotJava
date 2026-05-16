@@ -2,25 +2,25 @@
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam roundcorner 12
-title Диалоговое состояние Telegram-бота
+title Диаграмма состояний Telegram-бота
 
-[*] --> Idle
+[*] --> Ожидание
 
-state Idle {
+state Ожидание {
 }
 
-Idle --> WaitingBranch : /start
-WaitingBranch --> WaitingService : выбран филиал
-WaitingService --> CreatingVisit : выбрана услуга
-CreatingVisit --> TicketBound : визит создан и талон привязан
-CreatingVisit --> ErrorState : ошибка/таймаут queue API
+Ожидание --> ОжиданиеФилиала : /start
+ОжиданиеФилиала --> ОжиданиеУслуги : выбран филиал
+ОжиданиеУслуги --> СозданиеВизита : выбрана услуга
+СозданиеВизита --> ТалонПривязан : визит создан и талон привязан
+СозданиеВизита --> Ошибка : ошибка/таймаут Queue API
 
-TicketBound --> WaitingCallEvent : ожидание VISIT_CALL/VISIT_RECALL
-WaitingCallEvent --> Notified : событие получено
-Notified --> WaitingCallEvent : следующее событие
+ТалонПривязан --> ОжиданиеСобытияВызова : ожидание VISIT_CALL/VISIT_RECALL
+ОжиданиеСобытияВызова --> Уведомлен : событие получено
+Уведомлен --> ОжиданиеСобытияВызова : следующее событие
 
-ErrorState --> WaitingBranch : перезапуск диалога
-WaitingBranch --> Idle : /cancel
-WaitingService --> Idle : /cancel
-WaitingCallEvent --> Idle : /stop
+Ошибка --> ОжиданиеФилиала : перезапуск диалога
+ОжиданиеФилиала --> Ожидание : /cancel
+ОжиданиеУслуги --> Ожидание : /cancel
+ОжиданиеСобытияВызова --> Ожидание : /stop
 @enduml

@@ -1,5 +1,5 @@
 @startuml
-title Integration flow: bootstrapping, dialog and visit creation
+title Интеграционный поток: инициализация, диалог и создание визита
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam roundcorner 14
@@ -12,16 +12,16 @@ skinparam activity {
 }
 
 start
-:Load configuration\n(env + application.yml);
-:Build branch map\nwith queue providers;
-if (Queue provider) then (Orchestra)
-  :Use REST + CometD;
+:Загрузка конфигурации\n(env + application.yml);
+:Построение карты филиалов\nс провайдерами очереди;
+if (Провайдер очереди) then (Orchestra)
+  :Использовать REST + CometD;
 else (Axioma)
-  :Use REST + Kafka;
+  :Использовать REST + Kafka;
 endif
-:Receive Telegram update;
-:Resolve branch and service;
-:Create visit in provider API;
-:Bind ticket to chat/session;
+:Получить update из Telegram;
+:Определить филиал и услугу;
+:Создать визит в API провайдера;
+:Привязать талон к чату/сессии;
 stop
 @enduml
