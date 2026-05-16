@@ -320,7 +320,6 @@ plantuml -tsvg docs/diagrams-src/runtime-overview.puml docs/diagrams-src/integra
 - `docs/diagrams/cometd-sequence.svg`
 - `docs/diagrams/ticket-sequence.svg`
 
-> В `README.md` диаграммы должны размещаться ссылками на `.svg` из `docs/diagrams/`.
 
 ## 10. Границы и ограничения текущей реализации
 - Состояние пользователей хранится в памяти процесса (после рестарта сценарий начинается заново).
