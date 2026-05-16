@@ -26,6 +26,7 @@ logger:
 bot:
   runtime:
     client-path-yaml: client_path.yml
+    script-packages-dir: script-packages
     flow-order: BRANCH_FIRST
     service-blacklist: 'Оплата услуг'
     visit-call-template: '🔔 Талон {ticketId}! Подойдите к окну {servicePointName} (№{servicePointId}). Если номер уже обслужен — обратитесь к администратору.'
@@ -93,3 +94,11 @@ bot:
     bootstrap-servers: '192.168.8.40:29092'
     branch-bootstrap-servers: {}
     branch-bootstrap-servers-json: ''
+
+
+datasources:
+  default:
+    url: jdbc:h2:file:./data/chatbot;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driverClassName: org.h2.Driver
+    username: sa
+    password: 

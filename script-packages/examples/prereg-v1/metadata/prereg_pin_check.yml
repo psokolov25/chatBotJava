@@ -1,0 +1,7 @@
+id: prereg-pin-check
+name: Проверка предзаписи по PIN
+owner: integration-team
+channelSupport:
+  - telegram
+  - rest
+purpose: Проверяет наличие предзаписи и направляет пользователя дальше по маршруту.

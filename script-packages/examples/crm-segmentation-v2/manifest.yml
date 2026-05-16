@@ -1,0 +1,8 @@
+id: crm-segmentation
+version: 2.1.0
+description: Сегментация клиента по номеру телефона
+scripts:
+  - id: crm-segment-by-phone
+    path: scripts/crm_segment_by_phone.groovy
+    metadata: metadata/crm_segment_by_phone.yml
+    params: params/crm_segment_by_phone.yml

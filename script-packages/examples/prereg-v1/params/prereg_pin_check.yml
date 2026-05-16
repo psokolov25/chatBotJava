@@ -1,0 +1,7 @@
+validPins:
+  - "1234"
+  - "9999"
+serviceNames:
+  - "Консультации"
+multiServicesAction: choose
+retryQuestionId: bank_q_pin

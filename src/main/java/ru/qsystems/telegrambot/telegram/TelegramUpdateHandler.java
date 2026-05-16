@@ -12,6 +12,8 @@ import ru.qsystems.telegrambot.path.ClientPathService;
 import ru.qsystems.telegrambot.path.MultiServicesAction;
 import ru.qsystems.telegrambot.path.PathOption;
 import ru.qsystems.telegrambot.path.PathQuestion;
+import ru.qsystems.telegrambot.path.PathScriptExecutor;
+import ru.qsystems.telegrambot.path.PathScriptResult;
 import ru.qsystems.telegrambot.queue.QueueGateway;
 import ru.qsystems.telegrambot.queue.ServiceFilter;
 
@@ -35,6 +37,7 @@ public class TelegramUpdateHandler {
     private final KeyboardFactory keyboardFactory;
     private final UserStateStore stateStore;
     private final ClientPathService clientPathService;
+    private final PathScriptExecutor pathScriptExecutor;
 
     public TelegramUpdateHandler(
             TelegramApiClient telegram,
@@ -43,7 +46,8 @@ public class TelegramUpdateHandler {
             ServiceFilter serviceFilter,
             KeyboardFactory keyboardFactory,
             UserStateStore stateStore,
-            ClientPathService clientPathService
+            ClientPathService clientPathService,
+            PathScriptExecutor pathScriptExecutor
     ) {
         this.telegram = telegram;
         this.branches = branches;
@@ -52,6 +56,7 @@ public class TelegramUpdateHandler {
         this.keyboardFactory = keyboardFactory;
         this.stateStore = stateStore;
         this.clientPathService = clientPathService;
+        this.pathScriptExecutor = pathScriptExecutor;
     }
 
     public void handle(JsonNode update) {
@@ -66,8 +71,9 @@ public class TelegramUpdateHandler {
         long chatId = message.path("chat").path("id").asLong();
         long userId = message.path("from").path("id").asLong(chatId);
         String text = message.path("text").asText("").trim();
+        UserState state = stateStore.get(userId);
+        if (state.getStateName() == StateName.GET_TICKET && !text.isBlank() && onPathInputMessage(chatId, userId, text, state, fullName(message.path("from")))) return;
         if ("/start".equals(text) || "/help".equals(text)) {
-            UserState state = stateStore.get(userId);
             state.clearConversation();
             telegram.sendMessage(chatId, "Добро пожаловать!", null);
             if (branches.branchSelectionFirst() && branches.branches().size() > 1) {
@@ -78,6 +84,46 @@ public class TelegramUpdateHandler {
         }
     }
 
+
+    @SuppressWarnings("unchecked")
+    private boolean onPathInputMessage(long chatId, long userId, String text, UserState state, String fullName) {
+        BranchConfig branch = currentBranch(state).orElse(null);
+        if (branch == null) return false;
+        ClientPathConfig path = clientPathService.forBranch(branch).orElse(null);
+        if (path == null) return false;
+        String qid = String.valueOf(state.data().getOrDefault("path_question_id", ""));
+        PathQuestion q = path.questions().get(qid);
+        if (q == null || q.inputType() != ru.qsystems.telegrambot.path.PathInputType.TEXT) return false;
+        Map<String, String> answers = (Map<String, String>) state.data().computeIfAbsent("path_answers", i -> new HashMap<String, String>());
+        String key = q.inputKey() == null || q.inputKey().isBlank() ? q.questionId() : q.inputKey();
+        answers.put(key, text);
+        answers.put(q.text(), text);
+        List<ServiceInfo> services = loadVisibleServices(branch);
+        PathScriptResult result = pathScriptExecutor.execute(q.script(), q.scriptId(), Map.of("answer", text, "answers", new HashMap<>(answers)));
+        if (result == null) { telegram.sendMessage(chatId, "Скрипт шага не вернул результат.", null); return true; }
+        if (result.message() != null && !result.message().isBlank()) telegram.sendMessage(chatId, result.message(), null);
+        if (result.nextQuestionId() != null && !result.nextQuestionId().isBlank()) {
+            PathQuestion next = path.questions().get(result.nextQuestionId());
+            if (next == null) { telegram.sendMessage(chatId, "Следующий вопрос не найден.", null); return true; }
+            state.data().put("path_question_id", next.questionId());
+            telegram.sendMessage(chatId, next.text(), next.inputType() == ru.qsystems.telegrambot.path.PathInputType.OPTION ? keyboardFactory.clientPath(next, services) : null);
+            return true;
+        }
+        List<String> serviceIds = new ArrayList<>(result.serviceIds());
+        if (serviceIds.isEmpty() && !result.serviceNames().isEmpty()) {
+            Set<String> names = result.serviceNames().stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toSet());
+            serviceIds = services.stream().filter(sv -> names.contains(sv.name().toLowerCase())).map(ServiceInfo::id).toList();
+        }
+        if (serviceIds.isEmpty()) { telegram.sendMessage(chatId, "Скрипт не вернул услуги.", null); return true; }
+        Map<String, String> params = new HashMap<>(answers); params.putAll(result.visitParameters());
+        queueGateway.createVisit(branch, serviceIds, String.valueOf(userId), fullName, params).ifPresentOrElse(visit -> {
+            Object ticket = visit.getOrDefault("ticketId", visit.get("ticket"));
+            telegram.sendMessage(chatId, "Ваш талон: " + (ticket == null ? "создан" : ticket), null);
+            stateStore.addBranchSubscription(userId, branch.prefix());
+            state.clearConversation();
+        }, () -> telegram.sendMessage(chatId, "Ошибка создания талона", null));
+        return true;
+    }
     private void handleCallback(JsonNode callback) {
         String callbackId = callback.path("id").asText(null);
         telegram.answerCallbackQuery(callbackId);
@@ -150,7 +196,7 @@ public class TelegramUpdateHandler {
             PathQuestion root = path.get().rootQuestion();
             state.data().put("path_question_id", root.questionId());
             state.data().put("path_answers", new HashMap<String, String>());
-            telegram.sendMessage(chatId, root.text(), keyboardFactory.clientPath(root, services));
+            telegram.sendMessage(chatId, root.text(), root.inputType() == ru.qsystems.telegrambot.path.PathInputType.OPTION ? keyboardFactory.clientPath(root, services) : null);
         } else {
             state.data().put("path_mapped_service_ids", List.of());
             state.data().put("selected_service_ids", new HashSet<String>());
@@ -207,7 +253,7 @@ public class TelegramUpdateHandler {
                 return;
             }
             state.data().put("path_question_id", next.questionId());
-            telegram.sendMessage(chatId, next.text(), keyboardFactory.clientPath(next, services));
+            telegram.sendMessage(chatId, next.text(), next.inputType() == ru.qsystems.telegrambot.path.PathInputType.OPTION ? keyboardFactory.clientPath(next, services) : null);
             state.setStateName(StateName.GET_TICKET);
             return;
         }
