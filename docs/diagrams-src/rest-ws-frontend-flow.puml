@@ -2,34 +2,34 @@
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam roundcorner 12
-title Принцип работы REST API + WebSocket для абстрактного frontend
+title Принцип работы REST API + WebSocket для абстрактного фронтенда
 
-actor "Frontend\n(Web/Mobile)" as FE
-participant "Chat REST API" as API
-participant "Chat Session Store" as SESS
-participant "Chat WebSocket" as WS
-participant "Event Dispatcher" as EVT
+actor "Фронтенд\n(Web/Mobile)" as FE
+participant "REST API чата" as API
+participant "Хранилище сессий чата" as SESS
+participant "WebSocket чата" as WS
+participant "Диспетчер событий" as EVT
 
 FE -> API: POST /api/chat/init
-API -> SESS: create/get session(visitor)
+API -> SESS: создать/получить сессию(visitor)
 SESS --> API: sessionId + visitorId
-API --> FE: sessionId, wsEndpoint, message, options
+API --> FE: sessionId, wsEndpoint, сообщение, опции
 
 FE -> WS: CONNECT /ws/events/{sessionId}
-WS -> SESS: validate sessionId
-SESS --> WS: session exists
+WS -> SESS: проверить sessionId
+SESS --> WS: сессия найдена
 WS --> FE: {type: "connected", sessionId}
 
 loop события очереди
   EVT -> WS: VISIT_CALL / VISIT_RECALL
-  WS -> SESS: resolve session by visitorId
-  SESS --> WS: target session(s)
+  WS -> SESS: найти сессию по visitorId
+  SESS --> WS: целевая сессия(и)
   WS --> FE: {type:"visit-event", message, timestamp}
 end
 
 alt sessionId неизвестен
-  WS -> SESS: validate sessionId
-  SESS --> WS: not found
-  WS --> FE: close connection (policy violation)
+  WS -> SESS: проверить sessionId
+  SESS --> WS: не найдено
+  WS --> FE: закрыть соединение (нарушение политики)
 end
 @enduml

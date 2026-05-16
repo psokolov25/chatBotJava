@@ -2,7 +2,7 @@
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam roundcorner 12
-title Обработка ошибок upstream (Queue API + Events)
+title Обработка ошибок внешних систем (Queue API + события)
 start
 :Получение update из Telegram;
 :Определение филиала и системы очереди;
@@ -13,12 +13,12 @@ if (HTTP 2xx?) then (да)
   :Ответ клиенту с номером талона;
 else (нет)
   :Классификация ошибки;
-  if (Auth/403?) then (да)
+  if (Авторизация/403?) then (да)
     :Логирование безопасного контекста;
     :Ответ: интеграция недоступна;
   else (нет)
-    if (Timeout/5xx?) then (да)
-      :Логирование временного сбоя upstream;
+    if (Таймаут/5xx?) then (да)
+      :Логирование временного сбоя внешней системы;
       :Ответ: временная ошибка;
     else (валидация)
       :Подсказка по корректировке филиала/услуги;

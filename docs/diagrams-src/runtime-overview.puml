@@ -1,5 +1,5 @@
 @startuml
-title Runtime overview: Telegram bot + queue platforms
+title Обзор runtime: Telegram-бот и платформы очереди
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
 skinparam roundcorner 12
@@ -14,21 +14,21 @@ skinparam sequence {
   ActorBackgroundColor #E6FFFA
 }
 
-actor "Client" as User
+actor "Клиент" as User
 participant "Telegram API" as Telegram
-participant "Bot (Micronaut)" as Bot
+participant "Бот (Micronaut)" as Bot
 participant "Queue API\n(Orchestra / Axioma)" as Queue
-participant "Event stream\n(CometD / Kafka)" as Events
+participant "Поток событий\n(CometD / Kafka)" as Events
 
-== Ticket creation ==
-User -> Telegram: /start + dialog actions
-Telegram -> Bot: updates (long polling)
+== Создание талона ==
+User -> Telegram: /start + действия в диалоге
+Telegram -> Bot: обновления (long polling)
 Bot -> Queue: GET services / POST visit
-Queue --> Bot: ticket data
-Bot --> Telegram: ticket number + status
+Queue --> Bot: данные талона
+Bot --> Telegram: номер талона + статус
 
-== Asynchronous call notifications ==
+== Асинхронные уведомления о вызове ==
 Events -> Bot: VISIT_CALL / VISIT_RECALL
-Bot --> Telegram: personalized notification
-Telegram --> User: push message
+Bot --> Telegram: персонализированное уведомление
+Telegram --> User: push-сообщение
 @enduml

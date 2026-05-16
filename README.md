@@ -84,12 +84,12 @@ docker compose logs -f telegram-orchestra-bot
 - `path/` — сценарий клиентского пути из YAML.
 - `config/` — конфигурация, парсинг branch settings.
 
-![Runtime overview](docs/diagrams/runtime-overview.svg)
-![Integration flow](docs/diagrams/integration-flow.svg)
-![Dialog state machine](docs/diagrams/dialog-state-machine.svg)
-![Error handling flow](docs/diagrams/error-handling-flow.svg)
-![Client journey detailed](docs/diagrams/client-journey-detailed.svg)
-![REST+WS frontend flow](docs/diagrams/rest-ws-frontend-flow.svg)
+![Обзор runtime](docs/diagrams/runtime-overview.svg)
+![Интеграционный поток](docs/diagrams/integration-flow.svg)
+![Диаграмма состояний диалога](docs/diagrams/dialog-state-machine.svg)
+![Поток обработки ошибок](docs/diagrams/error-handling-flow.svg)
+![Детальный клиентский путь](docs/diagrams/client-journey-detailed.svg)
+![Поток фронтенда REST+WS](docs/diagrams/rest-ws-frontend-flow.svg)
 
 ### 4.3 Принцип работы REST API + WebSocket для абстрактного frontend (web/mobile)
 Бэкенд разделяет взаимодействие на две части:
@@ -103,7 +103,7 @@ docker compose logs -f telegram-orchestra-bot
 - **Transport split:** бизнес-команды пользователя идут через REST, а события внешних систем (Kafka/CometD) приходят только через WS.
 - **UI-agnostic contract:** формат событий (`type`, `message`, `timestamp`, `sessionId`) одинаково применим для браузера и мобильного клиента.
 
-![REST+WS frontend flow](docs/diagrams/rest-ws-frontend-flow.svg)
+![Поток фронтенда REST+WS](docs/diagrams/rest-ws-frontend-flow.svg)
 
 #### 4.3.1 Текстовые примеры работы с REST API
 **Пример 1: Инициализация сессии**
@@ -307,14 +307,20 @@ plantuml -tsvg docs/diagrams-src/runtime-overview.puml docs/diagrams-src/integra
 ```
 
 ### 9.3 Проверка
-После генерации убедитесь, что файлы обновились:
+После генерации убедитесь, что обновились именно SVG-файлы, которые используются в README:
 - `docs/diagrams/runtime-overview.svg`
 - `docs/diagrams/integration-flow.svg`
+- `docs/diagrams/dialog-state-machine.svg`
+- `docs/diagrams/error-handling-flow.svg`
+- `docs/diagrams/client-journey-detailed.svg`
+- `docs/diagrams/rest-ws-frontend-flow.svg`
 
 Дополнительно (если используете расширенный комплект схем), проверьте наличие:
 - `docs/diagrams/network-flow.svg`
 - `docs/diagrams/cometd-sequence.svg`
 - `docs/diagrams/ticket-sequence.svg`
+
+> В `README.md` диаграммы должны размещаться ссылками на `.svg` из `docs/diagrams/`.
 
 ## 10. Границы и ограничения текущей реализации
 - Состояние пользователей хранится в памяти процесса (после рестарта сценарий начинается заново).
