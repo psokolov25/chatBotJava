@@ -1,5 +1,7 @@
 @startuml
-skinparam BackgroundColor white
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
 title Детальный клиентский путь: от /start до уведомления о вызове
 
 actor Клиент

@@ -1,17 +1,27 @@
 @startuml
-skinparam BackgroundColor white
-title Интеграционный поток
+title Integration flow: bootstrapping, dialog and visit creation
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 14
+skinparam activity {
+  BackgroundColor #F8FAFC
+  BorderColor #2B6CB0
+  ArrowColor #2B6CB0
+  DiamondBackgroundColor #EBF8FF
+  DiamondBorderColor #2B6CB0
+}
+
 start
-:Загрузка конфига из env/application.yml;
-:Построение карты филиалов;
-if (Система очереди?) then (Orchestra)
-  :REST + CometD;
+:Load configuration\n(env + application.yml);
+:Build branch map\nwith queue providers;
+if (Queue provider) then (Orchestra)
+  :Use REST + CometD;
 else (Axioma)
-  :REST + Kafka;
+  :Use REST + Kafka;
 endif
-:Получение update из Telegram;
-:Определение филиала и услуги;
-:Создание визита;
-:Привязка талона к chat id;
+:Receive Telegram update;
+:Resolve branch and service;
+:Create visit in provider API;
+:Bind ticket to chat/session;
 stop
 @enduml
