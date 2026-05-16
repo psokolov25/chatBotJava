@@ -348,3 +348,15 @@ plantuml -tsvg docs/diagrams-src/runtime-overview.puml docs/diagrams-src/integra
   - вынести секреты в secret manager,
   - хранить состояние пользователей во внешнем storage (например, Redis/JDBC),
   - настроить мониторинг и алертинг на upstream ошибки.
+
+
+### 9.4 Галерея актуальных SVG-диаграмм
+![Обзор runtime](docs/diagrams/runtime-overview.svg)
+![Интеграционный поток](docs/diagrams/integration-flow.svg)
+![Диаграмма состояний диалога](docs/diagrams/dialog-state-machine.svg)
+![Поток обработки ошибок](docs/diagrams/error-handling-flow.svg)
+![Детальный клиентский путь](docs/diagrams/client-journey-detailed.svg)
+![Поток фронтенда REST+WS](docs/diagrams/rest-ws-frontend-flow.svg)
+![Сетевое взаимодействие](docs/diagrams/network-flow.svg)
+![Последовательность CometD](docs/diagrams/cometd-sequence.svg)
+![Последовательность регистрации талона](docs/diagrams/ticket-sequence.svg)
