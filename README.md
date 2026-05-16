@@ -91,6 +91,24 @@ docker compose logs -f telegram-orchestra-bot
 ![Детальный клиентский путь](docs/diagrams/client-journey-detailed.svg)
 ![Поток фронтенда REST+WS](docs/diagrams/rest-ws-frontend-flow.svg)
 
+### 4.2.1 Сетевое взаимодействие в контуре заказчика
+![Сетевое взаимодействие в контуре заказчика](docs/diagrams/network-flow.svg)
+
+Сервис должен размещаться в защищённом контуре заказчика и работать через контролируемые сетевые шлюзы. Рекомендуемая структура:
+- **DMZ/внешний периметр:** исходящий HTTPS-трафик к `api.telegram.org` (443/TCP) для long polling и отправки сообщений. Входящие подключения из интернета к боту не требуются.
+- **Внутренний прикладной сегмент:** контейнер/VM с ботом, открывающий только служебный порт приложения (обычно `8080/TCP`) для внутренних REST/WS клиентов и health-check.
+- **Сегмент систем очереди:** доступ бота к Orchestra/Axioma по HTTPS (обычно `443/TCP`) для создания визитов и чтения справочников.
+- **Сегмент событий:**
+  - для Orchestra — исходящее WebSocket/HTTP(S)-подключение к CometD endpoint;
+  - для Axioma — доступ к Kafka brokers (`9092/TCP` или TLS-порт кластера).
+- **Контур эксплуатации:** централизованные логи/мониторинг (например, ELK/Prometheus) и, при необходимости, bastion/VPN для администрирования без прямого доступа из интернета.
+
+Сетевые принципы для production:
+1. **Default deny:** открываются только явно необходимые исходящие направления и внутренние сервисные порты.
+2. **Разделение зон:** Telegram и внешние интеграции идут через egress/NAT, внутренние API — только в LAN/VPN заказчика.
+3. **Шифрование:** весь межсервисный трафик по TLS, сертификаты и секреты хранятся во внутреннем secret manager.
+4. **Наблюдаемость:** включены access/error-логи, метрики доступности upstream (Telegram, Orchestra/Axioma, Kafka/CometD), алерты на деградацию каналов.
+
 ### 4.3 Принцип работы REST API + WebSocket для абстрактного frontend (web/mobile)
 Бэкенд разделяет взаимодействие на две части:
 1. **REST (`/api/chat/*`)** — синхронные шаги диалога (инициализация сессии, отправка действий/ответов, получение next question/options).
@@ -300,10 +318,12 @@ GET ws://localhost:8080/ws/events/2f1a5f4e-4af1-4e5b-8a2b-8e1f1bda8f2d
 - `docs/diagrams-src/error-handling-flow.puml`
 - `docs/diagrams-src/client-journey-detailed.puml`
 - `docs/diagrams-src/rest-ws-frontend-flow.puml`
+- `docs/diagrams-src/network-flow.puml` *(если используется PlantUML-версия сетевой схемы)*
 
 ### 9.2 Генерация SVG
 ```bash
 plantuml -tsvg docs/diagrams-src/runtime-overview.puml docs/diagrams-src/integration-flow.puml docs/diagrams-src/dialog-state-machine.puml docs/diagrams-src/error-handling-flow.puml docs/diagrams-src/client-journey-detailed.puml docs/diagrams-src/rest-ws-frontend-flow.puml -o ../diagrams
+# network-flow.svg поддерживается как отдельный артефакт расширенного набора схем
 ```
 
 ### 9.3 Проверка
@@ -328,3 +348,15 @@ plantuml -tsvg docs/diagrams-src/runtime-overview.puml docs/diagrams-src/integra
   - вынести секреты в secret manager,
   - хранить состояние пользователей во внешнем storage (например, Redis/JDBC),
   - настроить мониторинг и алертинг на upstream ошибки.
+
+
+### 9.4 Галерея актуальных SVG-диаграмм
+![Обзор runtime](docs/diagrams/runtime-overview.svg)
+![Интеграционный поток](docs/diagrams/integration-flow.svg)
+![Диаграмма состояний диалога](docs/diagrams/dialog-state-machine.svg)
+![Поток обработки ошибок](docs/diagrams/error-handling-flow.svg)
+![Детальный клиентский путь](docs/diagrams/client-journey-detailed.svg)
+![Поток фронтенда REST+WS](docs/diagrams/rest-ws-frontend-flow.svg)
+![Сетевое взаимодействие](docs/diagrams/network-flow.svg)
+![Последовательность CometD](docs/diagrams/cometd-sequence.svg)
+![Последовательность регистрации талона](docs/diagrams/ticket-sequence.svg)

@@ -15,6 +15,14 @@ API -> SESS: создать/получить сессию(visitor)
 SESS --> API: sessionId + visitorId
 API --> FE: sessionId, wsEndpoint, сообщение, опции
 
+
+loop опрос
+  FE -> API: POST /api/chat/action (Ответ1 ... ОтветN)
+  API -> SESS: сохранить ответ и вычислить следующий шаг
+  SESS --> API: next question/options или финал
+  API --> FE: Вопрос1 ... ВопросN / результат
+end
+
 FE -> WS: CONNECT /ws/events/{sessionId}
 WS -> SESS: проверить sessionId
 SESS --> WS: сессия найдена
