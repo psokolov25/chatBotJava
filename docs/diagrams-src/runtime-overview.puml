@@ -23,6 +23,7 @@ participant "Поток событий\n(CometD / Kafka)" as Events
 == Создание талона ==
 User -> Telegram: /start + действия в диалоге
 Telegram -> Bot: обновления (long polling)
+Bot -> Bot: абстрактный опрос (Вопрос1/Ответ1 ... ВопросN/ОтветN)
 Bot -> Queue: GET services / POST visit
 Queue --> Bot: данные талона
 Bot --> Telegram: номер талона + статус
