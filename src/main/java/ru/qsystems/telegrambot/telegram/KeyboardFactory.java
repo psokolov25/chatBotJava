@@ -4,6 +4,7 @@ import jakarta.inject.Singleton;
 import ru.qsystems.telegrambot.model.BranchConfig;
 import ru.qsystems.telegrambot.model.ServiceInfo;
 import ru.qsystems.telegrambot.path.ClientPathService;
+import ru.qsystems.telegrambot.path.EntryAction;
 import ru.qsystems.telegrambot.path.PathOption;
 import ru.qsystems.telegrambot.path.PathQuestion;
 
@@ -24,6 +25,17 @@ public class KeyboardFactory {
 
     public Map<String, Object> mainMenu() {
         return inline(List.of(List.of(button("Взять талон", "take-ticket"))));
+    }
+
+    public Map<String, Object> mainMenu(List<EntryAction> entryActions) {
+        if (entryActions == null || entryActions.isEmpty()) {
+            return mainMenu();
+        }
+        List<List<Map<String, String>>> rows = new ArrayList<>();
+        for (EntryAction action : entryActions) {
+            rows.add(List.of(button(action.label(), action.action())));
+        }
+        return inline(rows);
     }
 
     public Map<String, Object> chooseBranchButton() {
