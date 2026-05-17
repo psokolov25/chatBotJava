@@ -38,6 +38,7 @@ public class TelegramUpdateHandler {
     private final UserStateStore stateStore;
     private final ClientPathService clientPathService;
     private final PathScriptExecutor pathScriptExecutor;
+    private final UserRateLimiter userRateLimiter;
 
     public TelegramUpdateHandler(
             TelegramApiClient telegram,
@@ -47,7 +48,8 @@ public class TelegramUpdateHandler {
             KeyboardFactory keyboardFactory,
             UserStateStore stateStore,
             ClientPathService clientPathService,
-            PathScriptExecutor pathScriptExecutor
+            PathScriptExecutor pathScriptExecutor,
+            UserRateLimiter userRateLimiter
     ) {
         this.telegram = telegram;
         this.branches = branches;
@@ -57,6 +59,7 @@ public class TelegramUpdateHandler {
         this.stateStore = stateStore;
         this.clientPathService = clientPathService;
         this.pathScriptExecutor = pathScriptExecutor;
+        this.userRateLimiter = userRateLimiter;
     }
 
     public void handle(JsonNode update) {
@@ -70,9 +73,18 @@ public class TelegramUpdateHandler {
     private void handleMessage(JsonNode message) {
         long chatId = message.path("chat").path("id").asLong();
         long userId = message.path("from").path("id").asLong(chatId);
+        if (!userRateLimiter.allow(userId)) {
+            telegram.sendMessage(chatId, "Слишком много запросов. Пожалуйста, подождите несколько секунд.", null);
+            return;
+        }
         String text = message.path("text").asText("").trim();
         UserState state = stateStore.get(userId);
         if (state.getStateName() == StateName.GET_TICKET && !text.isBlank() && onPathInputMessage(chatId, userId, text, state, fullName(message.path("from")))) return;
+        if ("/reset".equals(text)) {
+            stateStore.reset(userId);
+            telegram.sendMessage(chatId, "Сессия сброшена. Используйте /start для нового диалога.", null);
+            return;
+        }
         if ("/start".equals(text) || "/help".equals(text)) {
             state.clearConversation();
             telegram.sendMessage(chatId, "Добро пожаловать!", null);
@@ -132,6 +144,10 @@ public class TelegramUpdateHandler {
         long userId = callback.path("from").path("id").asLong();
         String fullName = fullName(callback.path("from"));
         long chatId = callback.path("message").path("chat").path("id").asLong(userId);
+        if (!userRateLimiter.allow(userId)) {
+            telegram.sendMessage(chatId, "Слишком много запросов. Пожалуйста, подождите несколько секунд.", null);
+            return;
+        }
         long messageId = callback.path("message").path("message_id").asLong(0L);
 
         UserState state = stateStore.get(userId);
@@ -234,7 +250,13 @@ public class TelegramUpdateHandler {
             state.clearConversation();
             return;
         }
-        int optionIndex = Integer.parseInt(parts[2]);
+        int optionIndex;
+        try {
+            optionIndex = Integer.parseInt(parts[2]);
+        } catch (NumberFormatException e) {
+            telegram.sendMessage(chatId, "Некорректный вариант ответа", null);
+            return;
+        }
         if (optionIndex < 0 || optionIndex >= question.options().size()) {
             telegram.sendMessage(chatId, "Некорректный вариант ответа", null);
             return;

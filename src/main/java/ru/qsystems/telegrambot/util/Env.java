@@ -45,4 +45,16 @@ public final class Env {
             return configuredValue;
         }
     }
+
+    public static long longValue(String envName, long configuredValue) {
+        String raw = System.getenv(envName);
+        if (raw == null || raw.isBlank()) {
+            return configuredValue;
+        }
+        try {
+            return Long.parseLong(raw.trim());
+        } catch (NumberFormatException e) {
+            return configuredValue;
+        }
+    }
 }

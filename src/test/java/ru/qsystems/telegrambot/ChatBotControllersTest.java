@@ -8,8 +8,14 @@ import ru.qsystems.telegrambot.config.BranchConfigurationService;
 import ru.qsystems.telegrambot.config.TelegramProperties;
 import ru.qsystems.telegrambot.model.BranchConfig;
 import ru.qsystems.telegrambot.model.QueueSystem;
+import ru.qsystems.telegrambot.path.ClientPathConfig;
 import ru.qsystems.telegrambot.path.ClientPathService;
+import ru.qsystems.telegrambot.path.MultiServicesAction;
+import ru.qsystems.telegrambot.path.PathInputType;
+import ru.qsystems.telegrambot.path.PathOption;
+import ru.qsystems.telegrambot.path.PathQuestion;
 import ru.qsystems.telegrambot.path.PathScriptExecutor;
+import ru.qsystems.telegrambot.telegram.UserStateStore;
 import ru.qsystems.telegrambot.queue.QueueGateway;
 import ru.qsystems.telegrambot.queue.ServiceFilter;
 import ru.qsystems.telegrambot.telegram.*;
@@ -35,11 +41,14 @@ class ChatBotControllersTest {
                 new BranchConfig("1", "Main", "MN", "10", QueueSystem.ORCHESTRA, "http://q", "u", "p", "tpl")
         ));
 
-        StatusController controller = new StatusController(branches, telegramProperties);
+        UserStateStore stateStore = new UserStateStore();
+        stateStore.get(100L);
+        StatusController controller = new StatusController(branches, telegramProperties, stateStore);
         Map<String, Object> response = controller.status();
 
         assertEquals(true, response.get("telegramConfigured"));
         assertEquals(1, response.get("branchCount"));
+        assertEquals(1, response.get("userStateCount"));
         List<?> list = (List<?>) response.get("branches");
         assertEquals(1, list.size());
         Map<?, ?> branch = (Map<?, ?>) list.get(0);
@@ -57,7 +66,9 @@ class ChatBotControllersTest {
         UserStateStore stateStore = new UserStateStore();
         ClientPathService pathService = mock(ClientPathService.class);
         PathScriptExecutor pathScriptExecutor = mock(PathScriptExecutor.class);
+        UserRateLimiter userRateLimiter = mock(UserRateLimiter.class);
 
+        when(userRateLimiter.allow(77L)).thenReturn(true);
         when(branches.branchSelectionFirst()).thenReturn(true);
         when(branches.branches()).thenReturn(List.of(
                 new BranchConfig("1", "Main", "MN", "10", QueueSystem.ORCHESTRA, "", "", "", ""),
@@ -66,8 +77,11 @@ class ChatBotControllersTest {
         when(keyboardFactory.chooseBranchButton()).thenReturn(Map.of("inline_keyboard", List.of()));
 
         TelegramUpdateHandler handler = new TelegramUpdateHandler(
-                telegram, branches, queueGateway, serviceFilter, keyboardFactory, stateStore, pathService, pathScriptExecutor
+                telegram, branches, queueGateway, serviceFilter, keyboardFactory, stateStore, pathService, pathScriptExecutor, userRateLimiter
         );
+
+        UserState state = stateStore.get(55L);
+        state.data().put("branch_id", "1");
 
         ObjectNode update = MAPPER.createObjectNode();
         ObjectNode message = update.putObject("message");
@@ -91,11 +105,13 @@ class ChatBotControllersTest {
         UserStateStore stateStore = new UserStateStore();
         ClientPathService pathService = mock(ClientPathService.class);
         PathScriptExecutor pathScriptExecutor = mock(PathScriptExecutor.class);
+        UserRateLimiter userRateLimiter = mock(UserRateLimiter.class);
 
+        when(userRateLimiter.allow(55L)).thenReturn(true);
         when(branches.byId("404")).thenReturn(java.util.Optional.empty());
 
         TelegramUpdateHandler handler = new TelegramUpdateHandler(
-                telegram, branches, queueGateway, serviceFilter, keyboardFactory, stateStore, pathService, pathScriptExecutor
+                telegram, branches, queueGateway, serviceFilter, keyboardFactory, stateStore, pathService, pathScriptExecutor, userRateLimiter
         );
 
         UserState state = stateStore.get(55L);
@@ -116,4 +132,46 @@ class ChatBotControllersTest {
         verify(telegram).sendMessage(eq(55L), eq("Не удалось выбрать отделение"), isNull());
         assertTrue(state.data().isEmpty());
     }
+
+    @Test
+    void telegramHandlerInvalidPathOptionIndexShowsValidationMessage() {
+        TelegramApiClient telegram = mock(TelegramApiClient.class);
+        BranchConfigurationService branches = mock(BranchConfigurationService.class);
+        QueueGateway queueGateway = mock(QueueGateway.class);
+        ServiceFilter serviceFilter = mock(ServiceFilter.class);
+        KeyboardFactory keyboardFactory = mock(KeyboardFactory.class);
+        UserStateStore stateStore = new UserStateStore();
+        ClientPathService pathService = mock(ClientPathService.class);
+        PathScriptExecutor pathScriptExecutor = mock(PathScriptExecutor.class);
+        UserRateLimiter userRateLimiter = mock(UserRateLimiter.class);
+
+        when(userRateLimiter.allow(55L)).thenReturn(true);
+        BranchConfig branch = new BranchConfig("1", "Main", "MN", "10", QueueSystem.ORCHESTRA, "", "", "", "");
+        when(branches.byId("1")).thenReturn(java.util.Optional.of(branch));
+        PathOption option = new PathOption("A", null, List.of("s1"), List.of(), MultiServicesAction.CHOOSE);
+        PathQuestion question = new PathQuestion("q1", "Вопрос", List.of(option), false, PathInputType.OPTION, null, null, null);
+        when(pathService.forBranch(branch)).thenReturn(java.util.Optional.of(new ClientPathConfig("q1", Map.of("q1", question))));
+
+        TelegramUpdateHandler handler = new TelegramUpdateHandler(
+                telegram, branches, queueGateway, serviceFilter, keyboardFactory, stateStore, pathService, pathScriptExecutor, userRateLimiter
+        );
+
+        UserState state = stateStore.get(55L);
+        state.data().put("branch_id", "1");
+
+        ObjectNode update = MAPPER.createObjectNode();
+        ObjectNode cb = update.putObject("callback_query");
+        cb.put("id", "cb-2");
+        cb.put("data", "path:q1:not-a-number");
+        cb.putObject("from").put("id", 55);
+        ObjectNode message = cb.putObject("message");
+        message.put("message_id", 11);
+        message.putObject("chat").put("id", 55);
+
+        handler.handle(update);
+
+        verify(telegram).answerCallbackQuery("cb-2");
+        verify(telegram).sendMessage(eq(55L), eq("Некорректный вариант ответа"), isNull());
+    }
+
 }

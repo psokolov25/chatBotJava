@@ -14,6 +14,7 @@ import ru.qsystems.telegrambot.util.PiiSanitizer;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Singleton
 public class VisitCallEventDispatcher {
@@ -48,6 +49,7 @@ public class VisitCallEventDispatcher {
 
     @SuppressWarnings("unchecked")
     public void dispatch(Map<String, Object> data, String branchPrefix) {
+        String requestId = UUID.randomUUID().toString();
         Object eventRaw = data == null ? null : data.get("E");
         if (!(eventRaw instanceof Map<?, ?> eventMapRaw)) {
             return;
@@ -62,7 +64,7 @@ public class VisitCallEventDispatcher {
             return;
         }
         Map<String, Object> prm = (Map<String, Object>) prmMapRaw;
-        LOG.info("{} payload: {}", eventType, sanitizer.sanitize(prm));
+        LOG.info("requestId={} {} payload: {}", requestId, eventType, sanitizer.sanitize(prm));
 
         Object chatRaw = prm.getOrDefault("TelegramChatId", prm.get("TelegramCustomerId"));
         if (chatRaw == null) {
@@ -94,7 +96,7 @@ public class VisitCallEventDispatcher {
         Object visitorIdRaw = prm.get("TelegramCustomerId");
         if (visitorIdRaw != null) {
             chatCoreService.sessionForVisitor(String.valueOf(visitorIdRaw)).ifPresent(sessionId ->
-                    eventBroadcaster.broadcastToSession(sessionId, message)
+                    eventBroadcaster.broadcastToSession(sessionId, message, requestId)
             );
         }
     }

@@ -39,6 +39,9 @@ bot:
       '6': true
       SBR: false
     branch-multi-service-enabled-json: ''
+    rate-limit-max-updates: 15
+    rate-limit-window-ms: 10000
+    rate-limit-cleanup-threshold: 5000
   telegram:
     token: '8263375262:AAEGdPIg4wgBoQCC8lDB-tSNPdQycVocT2s'
     api-url: 'https://api.telegram.org'

@@ -7,6 +7,8 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,15 +39,18 @@ public class QueueGateway {
     private final BranchConfigurationService branchConfigurationService;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
+    private final MeterRegistry meterRegistry;
 
     public QueueGateway(
             BranchConfigurationService branchConfigurationService,
             @Client("/") HttpClient httpClient,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            MeterRegistry meterRegistry
     ) {
         this.branchConfigurationService = branchConfigurationService;
         this.httpClient = httpClient;
         this.objectMapper = objectMapper;
+        this.meterRegistry = meterRegistry;
     }
 
     /**
@@ -64,6 +69,7 @@ public class QueueGateway {
         };
 
         LOG.info("GET services: {}", url);
+        Timer.Sample sample = Timer.start(meterRegistry);
         HttpRequest<?> request = HttpRequest.GET(URI.create(url))
                 .header(HttpHeaders.AUTHORIZATION, basicAuth(connection.login(), connection.password()))
                 .accept(MediaType.APPLICATION_JSON_TYPE);
@@ -74,9 +80,11 @@ public class QueueGateway {
             for (Map<String, Object> item : raw) {
                 services.add(ServiceInfo.from(item));
             }
+            recordTimer("get_services", connection.queueSystem().name().toLowerCase(), "success", sample);
             return services;
         } catch (Exception e) {
             LOG.error("GET services failed: {}", e.getMessage(), e);
+            recordTimer("get_services", connection.queueSystem().name().toLowerCase(), "error", sample);
             return List.of();
         }
     }
@@ -130,6 +138,7 @@ public class QueueGateway {
         }
 
         LOG.info("POST create visit: {} serviceIds={}", url, serviceIds);
+        Timer.Sample sample = Timer.start(meterRegistry);
         try {
             HttpRequest<Map<String, Object>> request = HttpRequest.POST(URI.create(url), payload)
                     .contentType(MediaType.APPLICATION_JSON_TYPE)
@@ -137,11 +146,21 @@ public class QueueGateway {
                     .header(HttpHeaders.AUTHORIZATION, basicAuth(connection.login(), connection.password()));
             String body = httpClient.toBlocking().retrieve(request, String.class);
             Map<String, Object> response = objectMapper.readValue(body, new TypeReference<>() {});
+            recordTimer("create_visit", connection.queueSystem().name().toLowerCase(), "success", sample);
             return Optional.of(response);
         } catch (Exception e) {
             LOG.error("Create visit failed: {}", e.getMessage(), e);
+            recordTimer("create_visit", connection.queueSystem().name().toLowerCase(), "error", sample);
             return Optional.empty();
         }
+    }
+
+    private void recordTimer(String operation, String queueSystem, String result, Timer.Sample sample) {
+        sample.stop(Timer.builder("bot.queue_gateway.request")
+                .tag("operation", operation)
+                .tag("queue_system", queueSystem)
+                .tag("result", result)
+                .register(meterRegistry));
     }
 
     private static String basicAuth(String login, String password) {
