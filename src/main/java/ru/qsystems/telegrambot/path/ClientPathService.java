@@ -63,10 +63,10 @@ public class ClientPathService {
             return List.of();
         }
         Set<String> names = option.serviceNames().stream()
-                .map(name -> name.toLowerCase(Locale.ROOT))
+                .map(ClientPathService::normalizeServiceName)
                 .collect(Collectors.toSet());
         return services.stream()
-                .filter(service -> names.contains(service.name().toLowerCase(Locale.ROOT)))
+                .filter(service -> names.contains(normalizeServiceName(service.name())))
                 .map(ServiceInfo::id)
                 .toList();
     }
@@ -202,6 +202,11 @@ public class ClientPathService {
 
     private static String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value;
+    }
+
+    private static String normalizeServiceName(String value) {
+        if (value == null) return "";
+        return value.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
     }
 
     @SuppressWarnings("unchecked")

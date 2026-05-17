@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Locale;
 
 @Singleton
 public class TelegramUpdateHandler {
@@ -112,7 +113,8 @@ public class TelegramUpdateHandler {
         String key = q.inputKey() == null || q.inputKey().isBlank() ? q.questionId() : q.inputKey();
         answers.put(key, text);
         answers.put(q.text(), text);
-        List<ServiceInfo> services = loadVisibleServices(branch);
+        List<ServiceInfo> services = loadVisibleServicesSafe(chatId, branch);
+        if (services == null) return true;
         PathScriptResult result;
         try {
             result = pathScriptExecutor.execute(q.script(), q.scriptId(), Map.of("answer", text, "answers", new HashMap<>(answers)));
@@ -136,17 +138,32 @@ public class TelegramUpdateHandler {
         }
         List<String> serviceIds = new ArrayList<>(result.serviceIds());
         if (serviceIds.isEmpty() && !result.serviceNames().isEmpty()) {
-            Set<String> names = result.serviceNames().stream().map(String::toLowerCase).collect(java.util.stream.Collectors.toSet());
-            serviceIds = services.stream().filter(sv -> names.contains(sv.name().toLowerCase())).map(ServiceInfo::id).toList();
+            Set<String> names = result.serviceNames().stream()
+                    .map(TelegramUpdateHandler::normalizeServiceName)
+                    .collect(java.util.stream.Collectors.toSet());
+            serviceIds = services.stream()
+                    .filter(sv -> names.contains(normalizeServiceName(sv.name())))
+                    .map(ServiceInfo::id)
+                    .toList();
         }
-        if (serviceIds.isEmpty()) { telegram.sendMessage(chatId, "Скрипт не вернул услуги.", null); return true; }
+        if (serviceIds.isEmpty()) {
+            LOG.warn("Path script did not resolve services. branch={}, question={}, scriptServiceNames={}, availableServices={}",
+                    branch.branchId(), q.questionId(), result.serviceNames(), services.stream().map(ServiceInfo::name).toList());
+            telegram.sendMessage(chatId, "Скрипт не вернул услуги.", null);
+            return true;
+        }
         Map<String, String> params = new HashMap<>(answers); params.putAll(result.visitParameters());
-        queueGateway.createVisit(branch, serviceIds, String.valueOf(userId), fullName, params).ifPresentOrElse(visit -> {
-            Object ticket = visit.getOrDefault("ticketId", visit.get("ticket"));
-            telegram.sendMessage(chatId, "Ваш талон: " + (ticket == null ? "создан" : ticket), null);
-            stateStore.addBranchSubscription(userId, branch.prefix());
-            state.clearConversation();
-        }, () -> telegram.sendMessage(chatId, "Ошибка создания талона", null));
+        try {
+            queueGateway.createVisit(branch, serviceIds, String.valueOf(userId), fullName, params).ifPresentOrElse(visit -> {
+                Object ticket = visit.getOrDefault("ticketId", visit.get("ticket"));
+                telegram.sendMessage(chatId, "Ваш талон: " + (ticket == null ? "создан" : ticket), null);
+                stateStore.addBranchSubscription(userId, branch.prefix());
+                state.clearConversation();
+            }, () -> telegram.sendMessage(chatId, "Ошибка создания талона", null));
+        } catch (RuntimeException ex) {
+            LOG.warn("Failed to create visit while handling path input. branch={}", branch.branchId(), ex);
+            sendTemporarySuoUnavailable(chatId);
+        }
         return true;
     }
 
@@ -180,6 +197,11 @@ public class TelegramUpdateHandler {
             }
         }
         return false;
+    }
+
+    private static String normalizeServiceName(String value) {
+        if (value == null) return "";
+        return value.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
     }
     private void handleCallback(JsonNode callback) {
         String callbackId = callback.path("id").asText(null);
@@ -252,7 +274,8 @@ public class TelegramUpdateHandler {
     }
 
     private void startTicketFlow(long chatId, UserState state, BranchConfig branch) {
-        List<ServiceInfo> services = loadVisibleServices(branch);
+        List<ServiceInfo> services = loadVisibleServicesSafe(chatId, branch);
+        if (services == null) return;
         Optional<ClientPathConfig> path = clientPathService.forBranch(branch);
         if (path.isPresent()) {
             String entryAction = optionalString(state.data().get("entry_action")).orElse("take-ticket");
@@ -332,7 +355,8 @@ public class TelegramUpdateHandler {
         PathOption option = question.options().get(optionIndex);
         Map<String, String> pathAnswers = (Map<String, String>) state.data().computeIfAbsent("path_answers", ignored -> new HashMap<String, String>());
         pathAnswers.put(question.text(), option.text());
-        List<ServiceInfo> services = loadVisibleServices(branch);
+        List<ServiceInfo> services = loadVisibleServicesSafe(chatId, branch);
+        if (services == null) return;
 
         if (option.nextQuestionId() != null && !option.nextQuestionId().isBlank()) {
             PathQuestion next = path.questions().get(option.nextQuestionId());
@@ -421,7 +445,9 @@ public class TelegramUpdateHandler {
             state.clearConversation();
             return;
         }
-        List<ServiceInfo> services = mappedServices(state, loadVisibleServices(branch));
+        List<ServiceInfo> allServices = loadVisibleServicesSafe(chatId, branch);
+        if (allServices == null) return;
+        List<ServiceInfo> services = mappedServices(state, allServices);
         Set<String> availableIds = services.stream().map(ServiceInfo::id).collect(java.util.stream.Collectors.toSet());
         Boolean pathAllowMulti = (Boolean) state.data().get("path_allow_multi_choice");
         boolean multiEnabled = pathAllowMulti != null ? pathAllowMulti : serviceFilter.multiServiceEnabled(branch);
@@ -465,17 +491,36 @@ public class TelegramUpdateHandler {
             List<String> serviceIds,
             Map<String, String> pathAnswers
     ) {
-        queueGateway.createVisit(branch, serviceIds, String.valueOf(userId), fullName, pathAnswers)
-                .ifPresentOrElse(visit -> {
-                    Object ticket = visit.getOrDefault("ticketId", visit.get("ticket"));
-                    telegram.sendMessage(chatId, "Ваш талон: " + (ticket == null ? "создан" : ticket), null);
-                    stateStore.addBranchSubscription(userId, branch.prefix());
-                    state.clearConversation();
-                }, () -> telegram.sendMessage(chatId, "Ошибка создания талона", null));
+        try {
+            queueGateway.createVisit(branch, serviceIds, String.valueOf(userId), fullName, pathAnswers)
+                    .ifPresentOrElse(visit -> {
+                        Object ticket = visit.getOrDefault("ticketId", visit.get("ticket"));
+                        telegram.sendMessage(chatId, "Ваш талон: " + (ticket == null ? "создан" : ticket), null);
+                        stateStore.addBranchSubscription(userId, branch.prefix());
+                        state.clearConversation();
+                    }, () -> telegram.sendMessage(chatId, "Ошибка создания талона", null));
+        } catch (RuntimeException ex) {
+            LOG.warn("Failed to create visit in SUO. branch={}, services={}", branch.branchId(), serviceIds, ex);
+            sendTemporarySuoUnavailable(chatId);
+        }
     }
 
     private List<ServiceInfo> loadVisibleServices(BranchConfig branch) {
         return serviceFilter.visibleServices(queueGateway.getServices(branch));
+    }
+
+    private List<ServiceInfo> loadVisibleServicesSafe(long chatId, BranchConfig branch) {
+        try {
+            return loadVisibleServices(branch);
+        } catch (RuntimeException ex) {
+            LOG.warn("Failed to load services from SUO. branch={}", branch.branchId(), ex);
+            sendTemporarySuoUnavailable(chatId);
+            return null;
+        }
+    }
+
+    private void sendTemporarySuoUnavailable(long chatId) {
+        telegram.sendMessage(chatId, "Сервис временно недоступен: потеряна связь с СУО. Повторите шаг через несколько секунд.", null);
     }
 
     private List<ServiceInfo> mappedServices(UserState state, List<ServiceInfo> allServices) {
