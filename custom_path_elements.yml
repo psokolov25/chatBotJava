@@ -1,0 +1,9 @@
+elements:
+  - id: verify_phone
+    title: Проверка номера телефона
+    script_id: crm-segment-by-phone
+    description: Скрипт проверяет номер, сегмент клиента и заполняет переменные customer_segment/phone_verified.
+  - id: prereg_pin
+    title: Проверка ПИН из SMS
+    script_id: prereg-pin-check
+    description: Скрипт сверяет одноразовый ПИН перед созданием талона.

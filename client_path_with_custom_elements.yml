@@ -1,0 +1,28 @@
+journeys:
+  - branches: ["5", "SBR"]
+    root_question_id: q0
+    questions:
+      q0:
+        text: "Введите номер телефона"
+        input_type: text
+        input_key: phone
+        script_id: crm-segment-by-phone
+        script: |
+          if (!ctx.input.phone) {
+            return [ok:false, error:'Телефон обязателен']
+          }
+          return [ok:true, phone_verified:true]
+      q1:
+        text: "Введите ПИН из SMS"
+        input_type: text
+        input_key: pin
+        script_id: prereg-pin-check
+        script: |
+          if ((ctx.input.pin ?: '').size() != 4) {
+            return [ok:false, error:'ПИН должен содержать 4 цифры']
+          }
+          return [ok:true]
+        include_other_services_option: true
+        options:
+          - text: "Открыть вклад"
+            service_names: ["Депозиты"]

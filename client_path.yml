@@ -1,276 +1,141 @@
-# Маршруты клиента по отделениям.
-# Один маршрут можно назначить на одно или несколько отделений через branches.
-# branches: список branch_id, prefix или точного имени отделения.
-#
-# Подсказки по опциям:
-# - next_question_id: переход к следующему вопросу (без создания талона на этом шаге)
-# - services: список ID услуг (числа), если хотите маппить по ID
-# - service_names: список внутренних имен услуг, если хотите маппить по именам
-# - multi_services_action: что делать, когда один ответ соответствует нескольким услугам:
-#     * auto        -> сразу создать визит со всеми найденными услугами
-#     * choose      -> предложить выбрать ОДНУ услугу из найденных
-#     * choose_many -> предложить выбрать НЕСКОЛЬКО услуг и подтвердить
-#   По умолчанию: choose.
-# Комментарии YAML безопасны и не влияют на работу парсера.
-
 journeys:
-  # Пример 1: Банк (например, Сбербанк Минск)
-  - branches: ["5", "SBR", "Сбербанк г. Минск"]
-    root_question_id: bank_q0
-    questions:
-      bank_q0:
-        text: "Выберите формат обращения"
-        options:
-          - text: "Физическое лицо"
-            next_question_id: bank_q1
-          - text: "Другое обращение"
-            next_question_id: bank_q1
-
-      bank_q1:
-        text: "Что вы хотите сделать в банке?"
-        options:
-          - text: "Работа с деньгами"
-            next_question_id: bank_q2_money
-          - text: "Оформление продуктов"
-            next_question_id: bank_q2_products
-          - text: "Консультации"
-            next_question_id: bank_q2_consult
-
-      bank_q2_money:
-        text: "Выберите тип операции с деньгами"
-        options:
-          - text: "Внести или снять наличные"
-            next_question_id: bank_q3_cash
-          - text: "Разместить накопления"
-            next_question_id: bank_q3_deposit
-
-      bank_q3_cash:
-        text: "Уточните операцию по кассе"
-        include_other_services_option: true
-        options:
-          - text: "Кассовые операции"
-            service_names: ["Касса"]
-          - text: "Валютно-обменные операции"
-            service_names: ["Обмен валют", "Касса"]
-
-      bank_q3_deposit:
-        text: "Какой продукт вас интересует?"
-        include_other_services_option: true
-        options:
-          - text: "Открыть депозит"
-            service_names: ["Депозиты"]
-          - text: "Инвестиционные решения"
-            service_names: ["Инвестиции"]
-
-      bank_q2_products:
-        text: "Какой продукт хотите оформить?"
-        options:
-          - text: "Карточный продукт"
-            next_question_id: bank_q3_cards
-          - text: "Кредитный продукт"
-            next_question_id: bank_q3_loans
-
-      bank_q3_cards:
-        text: "Уточните тип карточного вопроса"
-        include_other_services_option: true
-        options:
-          - text: "Оформить карту"
-            service_names: ["Карты"]
-          - text: "Перевыпуск/обслуживание карты"
-            service_names: ["Карты"]
-
-      bank_q3_loans:
-        text: "Какой вопрос по кредиту?"
-        include_other_services_option: true
-        options:
-          # Здесь именно НЕСКОЛЬКО услуг (2): "Кредиты" и "Страхование".
-          # Клиент сможет выбрать одну или несколько и подтвердить выбор.
-          - text: "Новый кредит"
-            service_names: ["Кредиты", "Страхование"]
-            multi_services_action: choose_many
-          - text: "Рефинансирование"
-            service_names: ["Кредиты"]
-
-      bank_q2_consult:
-        text: "Какая консультация нужна?"
-        include_other_services_option: true
-        options:
-          - text: "По инвестициям"
-            service_names: ["Инвестиции"]
-          - text: "По депозитам"
-            service_names: ["Депозиты"]
-          - text: "По картам"
-            service_names: ["Карты"]
-
-  # Пример 2: Нотариус
-  - branches: ["6", "NTR", "Нотариус"]
-    root_question_id: notary_q0
-    questions:
-      notary_q0:
-        text: "Выберите формат обращения"
-        options:
-          - text: "Личное обращение"
-            next_question_id: notary_q1
-          - text: "Обращение по доверенности"
-            next_question_id: notary_q1
-
-      notary_q1:
-        text: "По какому вопросу вы обратились?"
-        options:
-          - text: "Документы"
-            next_question_id: notary_q2_docs
-          - text: "Сделки и имущество"
-            next_question_id: notary_q2_deals
-          - text: "Наследство"
-            next_question_id: notary_q2_inheritance
-
-      notary_q2_docs:
-        text: "Выберите тип документа"
-        options:
-          - text: "Доверенности"
-            next_question_id: notary_q3_power
-          - text: "Заверение копий/подписей"
-            next_question_id: notary_q3_cert
-
-      notary_q3_power:
-        text: "Уточните вид доверенности"
-        include_other_services_option: true
-        options:
-          - text: "Разовая доверенность"
-            service_names: ["Доверенности"]
-          - text: "Генеральная доверенность"
-            service_names: ["Доверенности"]
-
-      notary_q3_cert:
-        text: "Какое заверение требуется?"
-        include_other_services_option: true
-        options:
-          - text: "Заверение подписи"
-            service_names: ["Заверение документов"]
-          - text: "Заверение копии"
-            service_names: ["Заверение документов"]
-
-      notary_q2_deals:
-        text: "Какой тип сделки?"
-        include_other_services_option: true
-        options:
-          # Здесь именно НЕСКОЛЬКО услуг (2), и создается один визит сразу с обеими.
-          - text: "Сделка с недвижимостью"
-            service_names: ["Сделки", "Заверение документов"]
-            multi_services_action: auto
-          - text: "Сделка с долями/имуществом"
-            service_names: ["Сделки"]
-
-      notary_q2_inheritance:
-        text: "Что нужно по наследству?"
-        include_other_services_option: true
-        options:
-          - text: "Открытие наследственного дела"
-            service_names: ["Наследственные дела"]
-          - text: "Сопровождение наследственного дела"
-            service_names: ["Наследственные дела"]
-
-  # Fallback-маршрут для остальных отделений
   - default: true
-    root_question_id: default_q0
+    entry_actions:
+      - action: take-ticket
+        label: Взять талон
+        root_question_id: standard_q0
+      - action: take-ticket-prereg
+        label: Взять талон по предварительной записи
+        root_question_id: prereg_q0
+      - action: take-ticket-segment
+        label: Взять талон по клиентскому сегменту
+        root_question_id: segment_q0
+    root_question_id: standard_q0
     questions:
-      default_q0:
-        text: "Какой формат обращения?"
+      standard_q0:
+        text: "Выберите формат обращения"
         options:
           - text: "Личное обращение"
-            next_question_id: default_q1
+            next_question_id: standard_q1
           - text: "Обращение по доверенности"
-            next_question_id: default_q1
+            next_question_id: standard_q1
 
-      default_q1:
-        text: "С какой целью обращаетесь?"
+      standard_q1:
+        text: "Какой тип задачи хотите решить?"
         options:
           - text: "Консультация"
-            next_question_id: default_q2_consult
+            next_question_id: standard_consult_q2
           - text: "Оформление документов"
-            next_question_id: default_q2_docs
-          - text: "Оплата"
-            next_question_id: default_q2_payment
+            next_question_id: standard_docs_q2
+          - text: "Сделки и сопровождение"
+            next_question_id: standard_deals_q2
 
-      default_q2_consult:
-        text: "Какой тип консультации нужен?"
+      standard_consult_q2:
+        text: "Какая консультация нужна?"
         options:
-          - text: "Юридическая"
-            next_question_id: default_q3_legal
-          - text: "Техническая"
-            next_question_id: default_q3_tech
+          - text: "Юридическая консультация"
+            next_question_id: standard_consult_q3_legal
+          - text: "Финансовая консультация"
+            next_question_id: standard_consult_q3_fin
 
-      default_q3_legal:
+      standard_consult_q3_legal:
         text: "Уточните тему юридической консультации"
         include_other_services_option: true
         options:
-          - text: "Договоры"
+          - text: "Договоры и сделки"
             service_names: ["Юридическая консультация"]
           - text: "Претензии и споры"
             service_names: ["Юридическая консультация"]
 
-      default_q3_tech:
-        text: "Уточните тему технической консультации"
+      standard_consult_q3_fin:
+        text: "Уточните тему финансовой консультации"
         include_other_services_option: true
         options:
-          - text: "Подключение сервисов"
-            service_names: ["Техподдержка"]
-          - text: "Проблемы в работе сервисов"
-            service_names: ["Техподдержка"]
-
-      default_q2_docs:
-        text: "Какой документ хотите оформить?"
-        include_other_services_option: true
-        options:
-          - text: "Типовой документ"
-            service_names: ["Оформление документов"]
-          - text: "Индивидуальный документ"
-            service_names: ["Оформление документов"]
-
-      default_q2_payment:
-        text: "Что хотите оплатить?"
-        include_other_services_option: true
-        options:
-          - text: "Оплата услуги"
-            service_names: ["Оплата услуг"]
-          - text: "Оплата госпошлины"
-            service_names: ["Оплата услуг"]
-
-  # Пример 3: Axioma (Банк "Дубна")
-  - branches: ["cd842979-3dc1-4505-a1ae-9a92f0622da2", "DUB", "Банк \"Дубна\""]
-    root_question_id: axioma_q0
-    questions:
-      axioma_q0:
-        text: "Выберите формат обращения"
-        options:
-          - text: "Основное обслуживание"
-            next_question_id: axioma_q1
-          - text: "Повторное обращение"
-            next_question_id: axioma_q1
-
-      axioma_q1:
-        text: "Какой продукт вас интересует?"
-        options:
-          - text: "Кредитные карты"
-            next_question_id: axioma_q2_credit
-          - text: "Дебетовые карты"
-            next_question_id: axioma_q2_debit
-
-      axioma_q2_credit:
-        text: "Что нужно по кредитной карте?"
-        include_other_services_option: true
-        options:
-          - text: "Оформление/выпуск"
-            service_names: ["Выпуск кредитной карты"]
-          - text: "Проверка кредитной истории"
-            service_names: ["Выпуск кредитной карты"]
-
-      axioma_q2_debit:
-        text: "Что нужно по дебетовой карте?"
-        include_other_services_option: true
-        options:
-          - text: "Выпуск дебетовой карты"
-            service_names: ["Выпуск дебетовой карты"]
-          - text: "Консультация и оформление"
-            service_names: ["Выпуск дебетовой карты", "Выпуск кредитной карты"]
+          - text: "Личные финансы"
+            service_names: ["Финансовая консультация"]
+          - text: "Инвестиции"
+            service_names: ["Финансовая консультация", "Премиальное обслуживание"]
             multi_services_action: choose_many
+
+      standard_docs_q2:
+        text: "Какой документ хотите оформить?"
+        options:
+          - text: "Стандартный пакет"
+            next_question_id: standard_docs_q3_simple
+          - text: "Индивидуальный пакет"
+            next_question_id: standard_docs_q3_custom
+
+      standard_docs_q3_simple:
+        text: "Тип стандартного пакета"
+        include_other_services_option: true
+        options:
+          - text: "Справки и выписки"
+            service_names: ["Оформление документов"]
+          - text: "Заявления"
+            service_names: ["Оформление документов"]
+
+      standard_docs_q3_custom:
+        text: "Нужна ли проверка юристом?"
+        options:
+          - text: "Да, нужна проверка"
+            service_names: ["Оформление документов", "Юридическая консультация"]
+            multi_services_action: choose_many
+          - text: "Нет, только подготовка"
+            service_names: ["Оформление документов"]
+
+      standard_deals_q2:
+        text: "Какая сделка вас интересует?"
+        options:
+          - text: "Сделка с недвижимостью"
+            next_question_id: standard_deals_q3_realty
+          - text: "Сделка с долями/бизнесом"
+            next_question_id: standard_deals_q3_shares
+
+      standard_deals_q3_realty:
+        text: "Нужны ли сопутствующие документы?"
+        options:
+          - text: "Да, оформить сопутствующие документы"
+            service_names: ["Сделки", "Оформление документов"]
+            multi_services_action: auto
+          - text: "Нет, только сопровождение сделки"
+            service_names: ["Сделки"]
+
+      standard_deals_q3_shares:
+        text: "Нужна ли консультация по рискам?"
+        options:
+          - text: "Да"
+            service_names: ["Сделки", "Юридическая консультация"]
+            multi_services_action: choose_many
+          - text: "Нет"
+            service_names: ["Сделки"]
+
+      prereg_q0:
+        text: "Введите номер предзаписи"
+        input_type: text
+        input_key: prereg_number
+        script: |
+          def n = (answer ?: '').trim()
+          if (!n || n.size() < 4) throw new IllegalArgumentException('Номер предзаписи слишком короткий')
+          return [nextQuestionId:'prereg_q1', visitParameters:[prereg_number:n]]
+
+      prereg_q1:
+        text: "Введите ПИН из SMS"
+        input_type: text
+        input_key: prereg_pin
+        script: |
+          def p = (answer ?: '').trim()
+          if (!(p ==~ /\d{4}/)) throw new IllegalArgumentException('ПИН должен состоять из 4 цифр')
+          return [serviceNames:['Предварительная запись'], visitParameters:[prereg_pin_verified:'true']]
+
+      segment_q0:
+        text: "Введите номер телефона"
+        input_type: text
+        input_key: phone
+        script: |
+          def phone = (answer ?: '').replaceAll(/\D/, '')
+          if (phone.size() < 10) throw new IllegalArgumentException('Введите корректный номер телефона')
+          def premium = phone.endsWith('00')
+          if (premium) {
+            return [serviceNames:['Премиальное обслуживание','Юридическая консультация'], multiServicesAction:'choose_many', visitParameters:[customer_segment:'premium']]
+          }
+          return [serviceNames:['Юридическая консультация'], visitParameters:[customer_segment:'mass']]

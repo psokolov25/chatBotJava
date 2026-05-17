@@ -31,8 +31,10 @@ public class ClientPathService {
     private static final Logger LOG = LoggerFactory.getLogger(ClientPathService.class);
 
     private final Map<String, ClientPathConfig> pathsByBranchKey;
+    private final CustomPathElementService customPathElementService;
 
-    public ClientPathService(BotRuntimeProperties runtimeProperties) {
+    public ClientPathService(BotRuntimeProperties runtimeProperties, CustomPathElementService customPathElementService) {
+        this.customPathElementService = customPathElementService;
         this.pathsByBranchKey = Collections.unmodifiableMap(load(runtimeProperties.getClientPathYaml()));
     }
 
@@ -134,6 +136,16 @@ public class ClientPathService {
             String inputKey = blankToNull(stringValue(question.get("input_key")));
             String script = blankToNull(stringValue(question.get("script")));
             String scriptId = blankToNull(stringValue(question.get("script_id")));
+            String customElementId = blankToNull(stringValue(question.get("custom_element_id")));
+            if (customElementId != null) {
+                CustomPathElement element = customPathElementService.list().stream()
+                        .filter(it -> customElementId.equals(it.id()))
+                        .findFirst()
+                        .orElse(null);
+                if (element != null) {
+                    scriptId = blankToNull(element.scriptId());
+                }
+            }
             Object optionsRaw = question.get("options");
             if (text.isBlank()) continue;
             List<PathOption> options = new ArrayList<>();
@@ -170,7 +182,8 @@ public class ClientPathService {
         if (!questions.containsKey(rootQuestionId)) {
             return Optional.empty();
         }
-        return Optional.of(new ClientPathConfig(rootQuestionId, Collections.unmodifiableMap(questions)));
+        List<EntryAction> entryActions = parseEntryActions(data, questions, rootQuestionId);
+        return Optional.of(new ClientPathConfig(rootQuestionId, Collections.unmodifiableMap(questions), entryActions));
     }
 
     private static List<String> stringList(Object value) {
@@ -189,5 +202,23 @@ public class ClientPathService {
 
     private static String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<EntryAction> parseEntryActions(Map<String, Object> data, Map<String, PathQuestion> questions, String fallbackRoot) {
+        Object raw = data.get("entry_actions");
+        if (!(raw instanceof List<?> list) || list.isEmpty()) {
+            return List.of(new EntryAction("take-ticket", "Взять талон", fallbackRoot));
+        }
+        List<EntryAction> out = new ArrayList<>();
+        for (Object item : list) {
+            if (!(item instanceof Map<?, ?> map)) continue;
+            String action = stringValue(map.get("action"));
+            String label = stringValue(map.get("label"));
+            String root = stringValue(map.get("root_question_id"));
+            if (action.isBlank() || label.isBlank() || root.isBlank() || !questions.containsKey(root)) continue;
+            out.add(new EntryAction(action, label, root));
+        }
+        return out.isEmpty() ? List.of(new EntryAction("take-ticket", "Взять талон", fallbackRoot)) : List.copyOf(out);
     }
 }
