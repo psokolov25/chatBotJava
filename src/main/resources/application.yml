@@ -6,7 +6,7 @@ micronaut:
   http:
     client:
       read-timeout: 95s
-      connect-timeout: 10s
+      connect-timeout: 3s
 
   router:
     static-resources:
