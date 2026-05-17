@@ -19,6 +19,7 @@ import ru.qsystems.telegrambot.model.QueueSystem;
 import ru.qsystems.telegrambot.model.ServiceInfo;
 
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -83,7 +84,7 @@ public class QueueGateway {
             recordTimer("get_services", connection.queueSystem().name().toLowerCase(), "success", sample);
             return services;
         } catch (Exception e) {
-            LOG.error("Ошибка запроса списка услуг: {}", e.getMessage(), e);
+            LOG.error("Ошибка запроса списка услуг: {}", normalizeMessage(e.getMessage()), e);
             recordTimer("get_services", connection.queueSystem().name().toLowerCase(), "error", sample);
             return List.of();
         }
@@ -149,7 +150,7 @@ public class QueueGateway {
             recordTimer("create_visit", connection.queueSystem().name().toLowerCase(), "success", sample);
             return Optional.of(response);
         } catch (Exception e) {
-            LOG.error("Ошибка создания визита: {}", e.getMessage(), e);
+            LOG.error("Ошибка создания визита: {}", normalizeMessage(e.getMessage()), e);
             recordTimer("create_visit", connection.queueSystem().name().toLowerCase(), "error", sample);
             return Optional.empty();
         }
@@ -161,6 +162,36 @@ public class QueueGateway {
                 .tag("queue_system", queueSystem)
                 .tag("result", result)
                 .register(meterRegistry));
+    }
+
+    private static String normalizeMessage(String message) {
+        if (message == null || message.isBlank()) {
+            return message;
+        }
+        String fixed = repairMojibake(message, Charset.forName("IBM866"));
+        if (!fixed.equals(message)) {
+            return fixed;
+        }
+        return repairMojibake(message, StandardCharsets.ISO_8859_1);
+    }
+
+    private static String repairMojibake(String source, Charset wrongCharset) {
+        if (source.indexOf('╨') < 0 && source.indexOf('╤') < 0) {
+            return source;
+        }
+        String decoded = new String(source.getBytes(wrongCharset), StandardCharsets.UTF_8);
+        return hasCyrillic(decoded) ? decoded : source;
+    }
+
+    private static boolean hasCyrillic(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            Character.UnicodeBlock block = Character.UnicodeBlock.of(value.charAt(i));
+            if (block == Character.UnicodeBlock.CYRILLIC || block == Character.UnicodeBlock.CYRILLIC_SUPPLEMENTARY
+                    || block == Character.UnicodeBlock.CYRILLIC_EXTENDED_A || block == Character.UnicodeBlock.CYRILLIC_EXTENDED_B) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String basicAuth(String login, String password) {
