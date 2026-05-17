@@ -30,23 +30,30 @@ public class ScriptPackageRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(ScriptPackageRegistry.class);
     private final Map<String, ScriptDefinition> scripts;
 
+    public ScriptPackageRegistry(BotRuntimeProperties properties, ScriptArchiveStore archiveStore) {
+        this.scripts = load(Path.of(properties.getScriptPackagesDir()), archiveStore);
+    }
+
     public ScriptPackageRegistry(BotRuntimeProperties properties) {
-        this.scripts = load(Path.of(properties.getScriptPackagesDir()));
+        this.scripts = load(Path.of(properties.getScriptPackagesDir()), null);
     }
 
     public Optional<ScriptDefinition> find(String scriptId) {
         return Optional.ofNullable(scripts.get(scriptId));
     }
 
-    private Map<String, ScriptDefinition> load(Path dir) {
-        if (!Files.isDirectory(dir)) {
-            LOG.info("Script package dir not found: {}", dir);
-            return Map.of();
-        }
+    private Map<String, ScriptDefinition> load(Path dir, ScriptArchiveStore archiveStore) {
         try {
-            List<Path> zips = Files.list(dir).filter(p -> p.getFileName().toString().endsWith(".zip")).sorted().toList();
             Map<String, ScriptDefinition> out = new LinkedHashMap<>();
-            for (Path zip : zips) loadZip(zip).forEach((k, v) -> out.merge(k, v, this::pickNewest));
+            if (archiveStore != null) {
+                for (ScriptArchiveStore.ArchiveRecord record : archiveStore.findAll()) {
+                    loadZipBytes(record.fileName(), record.content()).forEach((k, v) -> out.merge(k, v, this::pickNewest));
+                }
+            }
+            if (out.isEmpty() && Files.isDirectory(dir)) {
+                List<Path> zips = Files.list(dir).filter(p -> p.getFileName().toString().endsWith(".zip")).sorted().toList();
+                for (Path zip : zips) loadZip(zip).forEach((k, v) -> out.merge(k, v, this::pickNewest));
+            }
             LOG.info("Loaded script packages: {} scripts", out.size());
             return out;
         } catch (IOException e) {
@@ -56,9 +63,27 @@ public class ScriptPackageRegistry {
     }
 
     private Map<String, ScriptDefinition> loadZip(Path zipPath) {
+        try (InputStream in = Files.newInputStream(zipPath)) {
+            return loadZipStream(zipPath.getFileName().toString(), in);
+        } catch (Exception ex) {
+            LOG.warn("Failed to load script package zip stream: {}", zipPath, ex);
+            return Map.of();
+        }
+    }
+
+    private Map<String, ScriptDefinition> loadZipBytes(String name, byte[] data) {
+        try (InputStream in = new java.io.ByteArrayInputStream(data)) {
+            return loadZipStream(name, in);
+        } catch (Exception ex) {
+            LOG.warn("Failed to load script package zip from H2: {}", name, ex);
+            return Map.of();
+        }
+    }
+
+    private Map<String, ScriptDefinition> loadZipStream(String packageName, InputStream in) {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         Map<String, byte[]> entries = new HashMap<>();
-        try (InputStream in = Files.newInputStream(zipPath); ZipInputStream zin = new ZipInputStream(in)) {
+        try (ZipInputStream zin = new ZipInputStream(in)) {
             ZipEntry e;
             while ((e = zin.getNextEntry()) != null) {
                 if (!e.isDirectory()) entries.put(e.getName(), zin.readAllBytes());
@@ -81,11 +106,11 @@ public class ScriptPackageRegistry {
                         .filter(entries::containsKey)
                         .map(dep -> new DependencyJar(dep, entries.get(dep)))
                         .collect(Collectors.toList());
-                out.put(id, new ScriptDefinition(id, version, source, metadata, params, zipPath.getFileName().toString(), dependencyJars));
+                out.put(id, new ScriptDefinition(id, version, source, metadata, params, packageName, dependencyJars));
             }
             return out;
         } catch (Exception ex) {
-            LOG.warn("Failed to load script package zip: {}", zipPath, ex);
+            LOG.warn("Failed to load script package zip stream: {}", packageName, ex);
             return Map.of();
         }
     }
