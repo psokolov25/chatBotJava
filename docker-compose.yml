@@ -10,5 +10,8 @@ services:
     environment:
       MICRONAUT_CONFIG_FILES: /app/application.yml
       CLIENT_PATH_YAML: /app/client_path.yml
+      LOG_DIR: /app/logs
     ports:
       - "8080:8080"
+    volumes:
+      - ./logs:/app/logs

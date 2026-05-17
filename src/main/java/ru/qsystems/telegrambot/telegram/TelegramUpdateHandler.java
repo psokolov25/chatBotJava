@@ -147,8 +147,15 @@ public class TelegramUpdateHandler {
                     .toList();
         }
         if (serviceIds.isEmpty()) {
+            List<String> scriptServiceNames = result.serviceNames().stream()
+                    .map(TelegramUpdateHandler::normalizeMessage)
+                    .toList();
+            List<String> availableServices = services.stream()
+                    .map(ServiceInfo::name)
+                    .map(TelegramUpdateHandler::normalizeMessage)
+                    .toList();
             LOG.warn("Path script did not resolve services. branch={}, question={}, scriptServiceNames={}, availableServices={}",
-                    branch.branchId(), q.questionId(), result.serviceNames(), services.stream().map(ServiceInfo::name).toList());
+                    branch.branchId(), q.questionId(), scriptServiceNames, availableServices);
             telegram.sendMessage(chatId, "Скрипт не вернул услуги.", null);
             return true;
         }
