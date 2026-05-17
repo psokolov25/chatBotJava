@@ -50,7 +50,7 @@ public class ScriptArchiveStore {
     }
 
     private void initSchema() {
-        String sql = "create table if not exists script_archives(file_name varchar(255) primary key, content blob not null, uploaded_at timestamp not null)";
+        String sql = "create table if not exists script_archives(file_name varchar(255) primary key, content bytea not null, uploaded_at timestamp not null)";
         try (Connection c = dataSource.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.execute();
         } catch (Exception e) {
