@@ -68,7 +68,7 @@ public class QueueGateway {
                     + "/rest/servicepoint/branches/" + branch.branchId() + "/services/";
         };
 
-        LOG.info("GET services: {}", url);
+        LOG.info("Запрос списка услуг (GET): {}", url);
         Timer.Sample sample = Timer.start(meterRegistry);
         HttpRequest<?> request = HttpRequest.GET(URI.create(url))
                 .header(HttpHeaders.AUTHORIZATION, basicAuth(connection.login(), connection.password()))
@@ -83,7 +83,7 @@ public class QueueGateway {
             recordTimer("get_services", connection.queueSystem().name().toLowerCase(), "success", sample);
             return services;
         } catch (Exception e) {
-            LOG.error("GET services failed: {}", e.getMessage(), e);
+            LOG.error("Ошибка запроса списка услуг: {}", e.getMessage(), e);
             recordTimer("get_services", connection.queueSystem().name().toLowerCase(), "error", sample);
             return List.of();
         }
@@ -137,7 +137,7 @@ public class QueueGateway {
             payload.put("parameters", parameters);
         }
 
-        LOG.info("POST create visit: {} serviceIds={}", url, serviceIds);
+        LOG.info("Создание визита (POST): {} serviceIds={}", url, serviceIds);
         Timer.Sample sample = Timer.start(meterRegistry);
         try {
             HttpRequest<Map<String, Object>> request = HttpRequest.POST(URI.create(url), payload)
@@ -149,7 +149,7 @@ public class QueueGateway {
             recordTimer("create_visit", connection.queueSystem().name().toLowerCase(), "success", sample);
             return Optional.of(response);
         } catch (Exception e) {
-            LOG.error("Create visit failed: {}", e.getMessage(), e);
+            LOG.error("Ошибка создания визита: {}", e.getMessage(), e);
             recordTimer("create_visit", connection.queueSystem().name().toLowerCase(), "error", sample);
             return Optional.empty();
         }
