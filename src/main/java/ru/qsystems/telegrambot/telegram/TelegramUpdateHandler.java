@@ -91,7 +91,7 @@ public class TelegramUpdateHandler {
             if (branches.branchSelectionFirst() && branches.branches().size() > 1) {
                 telegram.sendMessage(chatId, "Сначала выберите отделение:", keyboardFactory.chooseBranchButton());
             } else {
-                telegram.sendMessage(chatId, "Выберите действие:", keyboardFactory.mainMenu());
+                telegram.sendMessage(chatId, "Выберите действие:", mainMenuForState(state));
             }
         }
     }
@@ -152,7 +152,8 @@ public class TelegramUpdateHandler {
 
         UserState state = stateStore.get(userId);
         try {
-            if ("take-ticket".equals(data)) {
+            if (data.startsWith("take-ticket")) {
+                state.data().put("entry_action", data);
                 onTakeTicket(chatId, userId, state);
             } else if ("choose-branch".equals(data)) {
                 telegram.sendMessage(chatId, "Выберите отделение:", keyboardFactory.branches(branches.branches()));
@@ -198,7 +199,7 @@ public class TelegramUpdateHandler {
         }
         state.data().put("branch_id", branchId);
         if (branches.branchSelectionFirst()) {
-            telegram.sendMessage(chatId, "Выберите действие:", keyboardFactory.mainMenu());
+            telegram.sendMessage(chatId, "Выберите действие:", mainMenuForState(state));
             state.setStateName(StateName.APPOINTMENT);
         } else {
             startTicketFlow(chatId, state, branch.get());
@@ -209,7 +210,8 @@ public class TelegramUpdateHandler {
         List<ServiceInfo> services = loadVisibleServices(branch);
         Optional<ClientPathConfig> path = clientPathService.forBranch(branch);
         if (path.isPresent()) {
-            PathQuestion root = path.get().rootQuestion();
+            String entryAction = optionalString(state.data().get("entry_action")).orElse("take-ticket");
+            PathQuestion root = resolveEntryRoot(path.get(), entryAction);
             state.data().put("path_question_id", root.questionId());
             state.data().put("path_answers", new HashMap<String, String>());
             telegram.sendMessage(chatId, root.text(), root.inputType() == ru.qsystems.telegrambot.path.PathInputType.OPTION ? keyboardFactory.clientPath(root, services) : null);
@@ -224,6 +226,26 @@ public class TelegramUpdateHandler {
             );
         }
         state.setStateName(StateName.GET_TICKET);
+    }
+
+    private Map<String, Object> mainMenuForState(UserState state) {
+        BranchConfig selected = optionalString(state.data().get("branch_id")).flatMap(branches::byId).orElse(null);
+        if (selected != null) {
+            Optional<ClientPathConfig> cfg = clientPathService.forBranch(selected);
+            if (cfg.isPresent()) {
+                return keyboardFactory.mainMenu(cfg.get().entryActions());
+            }
+        }
+        return keyboardFactory.mainMenu();
+    }
+
+    private static PathQuestion resolveEntryRoot(ClientPathConfig config, String action) {
+        return config.entryActions().stream()
+                .filter(it -> it.action().equals(action))
+                .map(it -> config.questions().get(it.rootQuestionId()))
+                .filter(q -> q != null)
+                .findFirst()
+                .orElseGet(config::rootQuestion);
     }
 
     @SuppressWarnings("unchecked")
