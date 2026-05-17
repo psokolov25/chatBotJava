@@ -8,6 +8,8 @@ import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -107,11 +109,41 @@ public class TelegramPollingService implements ApplicationEventListener<Applicat
                 try {
                     updateHandler.handle(update);
                 } catch (Exception e) {
-                    LOG.warn("Telegram update handling failed: {}", e.getMessage(), e);
+                    LOG.warn("Ошибка обработки обновления Telegram: {}", normalizeMessage(e.getMessage()), e);
                 }
             });
         } catch (Exception e) {
-            LOG.warn("Telegram update dispatch failed: {}", e.getMessage(), e);
+            LOG.warn("Ошибка диспетчеризации обновления Telegram: {}", normalizeMessage(e.getMessage()), e);
         }
+    }
+
+    private static String normalizeMessage(String message) {
+        if (message == null || message.isBlank()) {
+            return message;
+        }
+        String fixed = repairMojibake(message, Charset.forName("IBM866"));
+        if (!fixed.equals(message)) {
+            return fixed;
+        }
+        return repairMojibake(message, StandardCharsets.ISO_8859_1);
+    }
+
+    private static String repairMojibake(String source, Charset wrongCharset) {
+        if (source.indexOf('╨') < 0 && source.indexOf('╤') < 0) {
+            return source;
+        }
+        String decoded = new String(source.getBytes(wrongCharset), StandardCharsets.UTF_8);
+        return hasCyrillic(decoded) ? decoded : source;
+    }
+
+    private static boolean hasCyrillic(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            Character.UnicodeBlock block = Character.UnicodeBlock.of(value.charAt(i));
+            if (block == Character.UnicodeBlock.CYRILLIC || block == Character.UnicodeBlock.CYRILLIC_SUPPLEMENTARY
+                    || block == Character.UnicodeBlock.CYRILLIC_EXTENDED_A || block == Character.UnicodeBlock.CYRILLIC_EXTENDED_B) {
+                return true;
+            }
+        }
+        return false;
     }
 }
