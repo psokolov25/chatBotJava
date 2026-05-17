@@ -17,6 +17,8 @@ import ru.qsystems.telegrambot.path.PathScriptResult;
 import ru.qsystems.telegrambot.queue.QueueGateway;
 import ru.qsystems.telegrambot.queue.ServiceFilter;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -111,7 +113,18 @@ public class TelegramUpdateHandler {
         answers.put(key, text);
         answers.put(q.text(), text);
         List<ServiceInfo> services = loadVisibleServices(branch);
-        PathScriptResult result = pathScriptExecutor.execute(q.script(), q.scriptId(), Map.of("answer", text, "answers", new HashMap<>(answers)));
+        PathScriptResult result;
+        try {
+            result = pathScriptExecutor.execute(q.script(), q.scriptId(), Map.of("answer", text, "answers", new HashMap<>(answers)));
+        } catch (IllegalStateException ex) {
+            String scriptMessage = rootCauseMessage(ex);
+            telegram.sendMessage(chatId,
+                    scriptMessage == null || scriptMessage.isBlank()
+                            ? "Ошибка выполнения сценария. Попробуйте снова."
+                            : normalizeMessage(scriptMessage),
+                    null);
+            return true;
+        }
         if (result == null) { telegram.sendMessage(chatId, "Скрипт шага не вернул результат.", null); return true; }
         if (result.message() != null && !result.message().isBlank()) telegram.sendMessage(chatId, result.message(), null);
         if (result.nextQuestionId() != null && !result.nextQuestionId().isBlank()) {
@@ -135,6 +148,38 @@ public class TelegramUpdateHandler {
             state.clearConversation();
         }, () -> telegram.sendMessage(chatId, "Ошибка создания талона", null));
         return true;
+    }
+
+    private static String rootCauseMessage(Throwable throwable) {
+        Throwable current = throwable;
+        while (current.getCause() != null) {
+            current = current.getCause();
+        }
+        return current.getMessage();
+    }
+
+    private static String normalizeMessage(String message) {
+        if (message == null || message.isBlank()) return message;
+        String fixed = repairMojibake(message, Charset.forName("IBM866"));
+        if (!fixed.equals(message)) return fixed;
+        return repairMojibake(message, StandardCharsets.ISO_8859_1);
+    }
+
+    private static String repairMojibake(String source, Charset wrongCharset) {
+        if (source.indexOf('╨') < 0 && source.indexOf('╤') < 0) return source;
+        String decoded = new String(source.getBytes(wrongCharset), StandardCharsets.UTF_8);
+        return hasCyrillic(decoded) ? decoded : source;
+    }
+
+    private static boolean hasCyrillic(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            Character.UnicodeBlock block = Character.UnicodeBlock.of(value.charAt(i));
+            if (block == Character.UnicodeBlock.CYRILLIC || block == Character.UnicodeBlock.CYRILLIC_SUPPLEMENTARY
+                    || block == Character.UnicodeBlock.CYRILLIC_EXTENDED_A || block == Character.UnicodeBlock.CYRILLIC_EXTENDED_B) {
+                return true;
+            }
+        }
+        return false;
     }
     private void handleCallback(JsonNode callback) {
         String callbackId = callback.path("id").asText(null);
