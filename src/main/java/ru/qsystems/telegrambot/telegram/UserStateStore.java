@@ -27,4 +27,12 @@ public class UserStateStore {
         Object value = get(userId).data().get("branch_id");
         return value == null ? Optional.empty() : Optional.of(value.toString());
     }
+
+    public void reset(long userId) {
+        states.remove(userId);
+    }
+
+    public int size() {
+        return states.size();
+    }
 }

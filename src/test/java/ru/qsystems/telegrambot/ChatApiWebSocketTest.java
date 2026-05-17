@@ -75,6 +75,39 @@ class ChatApiWebSocketTest {
     }
 
     @Test
+    void broadcasterIncludesRequestIdWhenProvided() {
+        ChatEventBroadcaster broadcaster = new ChatEventBroadcaster();
+        ChatEventsWebSocket socket = mock(ChatEventsWebSocket.class);
+        broadcaster.register("session-1", socket);
+
+        broadcaster.broadcastToSession("session-1", "Талон A002", "req-123");
+
+        verify(socket).send(contains("\"requestId\":\"req-123\""));
+    }
+
+    @Test
+    void broadcasterIncludesEmptyRequestIdForLegacyCalls() {
+        ChatEventBroadcaster broadcaster = new ChatEventBroadcaster();
+        ChatEventsWebSocket socket = mock(ChatEventsWebSocket.class);
+        broadcaster.register("session-1", socket);
+
+        broadcaster.broadcastToSession("session-1", "Талон A003");
+
+        verify(socket).send(contains("\"requestId\":\"\""));
+    }
+
+    @Test
+    void broadcasterEscapesSpecialCharactersInMessage() {
+        ChatEventBroadcaster broadcaster = new ChatEventBroadcaster();
+        ChatEventsWebSocket socket = mock(ChatEventsWebSocket.class);
+        broadcaster.register("session-1", socket);
+
+        broadcaster.broadcastToSession("session-1", "Line1\n\"Q-01\" \\ desk", "req-escape");
+
+        verify(socket).send(contains("Line1\\n\\\"Q-01\\\" \\\\ desk"));
+    }
+
+    @Test
     void websocketRegistersAndUnregistersKnownSession() {
         ChatEventBroadcaster broadcaster = mock(ChatEventBroadcaster.class);
         ChatCoreService service = mock(ChatCoreService.class);

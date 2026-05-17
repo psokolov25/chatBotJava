@@ -18,6 +18,9 @@ public class BotRuntimeProperties {
     private boolean multiServiceEnabled = false;
     private String branchMultiServiceEnabledJson = "";
     private Map<String, Boolean> branchMultiServiceEnabled = new LinkedHashMap<>();
+    private int rateLimitMaxUpdates = 15;
+    private long rateLimitWindowMs = 10_000L;
+    private int rateLimitCleanupThreshold = 5_000;
 
     public String getClientPathYaml() {
         return Env.string("CLIENT_PATH_YAML", clientPathYaml);
@@ -98,5 +101,29 @@ public class BotRuntimeProperties {
 
     public void setBranchMultiServiceEnabled(Map<String, Boolean> branchMultiServiceEnabled) {
         this.branchMultiServiceEnabled = branchMultiServiceEnabled == null ? new LinkedHashMap<>() : new LinkedHashMap<>(branchMultiServiceEnabled);
+    }
+
+    public int getRateLimitMaxUpdates() {
+        return Env.integer("BOT_RATE_LIMIT_MAX_UPDATES", rateLimitMaxUpdates);
+    }
+
+    public void setRateLimitMaxUpdates(int rateLimitMaxUpdates) {
+        this.rateLimitMaxUpdates = rateLimitMaxUpdates;
+    }
+
+    public long getRateLimitWindowMs() {
+        return Env.longValue("BOT_RATE_LIMIT_WINDOW_MS", rateLimitWindowMs);
+    }
+
+    public void setRateLimitWindowMs(long rateLimitWindowMs) {
+        this.rateLimitWindowMs = rateLimitWindowMs;
+    }
+
+    public int getRateLimitCleanupThreshold() {
+        return Env.integer("BOT_RATE_LIMIT_CLEANUP_THRESHOLD", rateLimitCleanupThreshold);
+    }
+
+    public void setRateLimitCleanupThreshold(int rateLimitCleanupThreshold) {
+        this.rateLimitCleanupThreshold = rateLimitCleanupThreshold;
     }
 }

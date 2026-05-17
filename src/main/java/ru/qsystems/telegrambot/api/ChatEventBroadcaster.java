@@ -23,12 +23,18 @@ public class ChatEventBroadcaster {
     }
 
     public void broadcastToSession(String sessionId, String message) {
+        broadcastToSession(sessionId, message, null);
+    }
+
+    public void broadcastToSession(String sessionId, String message, String requestId) {
         Set<ChatEventsWebSocket> sessionSockets = sockets.get(sessionId);
         if (sessionSockets == null || sessionSockets.isEmpty()) {
             return;
         }
         String payload = "{\"type\":\"visit-event\",\"message\":" + quoteJson(message)
-                + ",\"timestamp\":\"" + Instant.now() + "\"}";
+                + ",\"timestamp\":\"" + Instant.now() + "\""
+                + ",\"requestId\":" + quoteJson(requestId)
+                + "}";
         for (ChatEventsWebSocket socket : sessionSockets) {
             socket.send(payload);
         }

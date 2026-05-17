@@ -4,6 +4,7 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import ru.qsystems.telegrambot.config.BranchConfigurationService;
 import ru.qsystems.telegrambot.config.TelegramProperties;
+import ru.qsystems.telegrambot.telegram.UserStateStore;
 
 import java.util.List;
 import java.util.Map;
@@ -12,10 +13,12 @@ import java.util.Map;
 public class StatusController {
     private final BranchConfigurationService branches;
     private final TelegramProperties telegramProperties;
+    private final UserStateStore userStateStore;
 
-    public StatusController(BranchConfigurationService branches, TelegramProperties telegramProperties) {
+    public StatusController(BranchConfigurationService branches, TelegramProperties telegramProperties, UserStateStore userStateStore) {
         this.branches = branches;
         this.telegramProperties = telegramProperties;
+        this.userStateStore = userStateStore;
     }
 
     @Get("/status")
@@ -23,6 +26,7 @@ public class StatusController {
         return Map.of(
                 "telegramConfigured", telegramProperties.hasToken(),
                 "branchCount", branches.branches().size(),
+                "userStateCount", userStateStore.size(),
                 "branches", branchViews()
         );
     }
