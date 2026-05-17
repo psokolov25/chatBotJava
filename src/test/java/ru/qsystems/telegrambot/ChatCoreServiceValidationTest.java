@@ -16,6 +16,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class ChatCoreServiceValidationTest {
@@ -165,5 +166,33 @@ class ChatCoreServiceValidationTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> service.act(init.sessionId(), new ChatCoreService.CoreAction("select-service", "confirm", null)));
         assertTrue(ex.getMessage().contains("недоступна"));
+    }
+
+    @Test
+    void pathInputHandlesScriptRuntimeFailureWithRetryMessage() {
+        BranchConfigurationService branches = mock(BranchConfigurationService.class);
+        QueueGateway queueGateway = mock(QueueGateway.class);
+        ServiceFilter serviceFilter = mock(ServiceFilter.class);
+        ClientPathService pathService = mock(ClientPathService.class);
+        PathScriptExecutor scriptExecutor = mock(PathScriptExecutor.class);
+
+        BranchConfig branch = new BranchConfig("1", "Main", "MN", "10", QueueSystem.ORCHESTRA, "", "", "", "");
+        when(branches.branchSelectionFirst()).thenReturn(false);
+        when(branches.singleBranchId()).thenReturn(Optional.of("1"));
+        when(branches.byId("1")).thenReturn(Optional.of(branch));
+
+        PathQuestion question = new PathQuestion("q1", "Введите ПИН", List.of(), false, PathInputType.TEXT, null, "pin", "some-script-id");
+        when(pathService.forBranch(branch)).thenReturn(Optional.of(new ClientPathConfig("q1", Map.of("q1", question))));
+        when(serviceFilter.visibleServices(anyList())).thenAnswer(inv -> inv.getArgument(0));
+        when(queueGateway.getServices(branch)).thenReturn(List.of());
+        when(scriptExecutor.execute(any(), any(), anyMap())).thenThrow(new IllegalStateException("integration lost"));
+
+        ChatCoreService service = new ChatCoreService(branches, queueGateway, serviceFilter, pathService, scriptExecutor);
+        ChatCoreService.CoreResponse init = service.initialize(new ChatCoreService.InitRequest("v1", "User"));
+        service.act(init.sessionId(), new ChatCoreService.CoreAction("take-ticket", null, null));
+        ChatCoreService.CoreResponse response = service.act(init.sessionId(), new ChatCoreService.CoreAction("path-input", "1234", null));
+
+        assertTrue(response.message().contains("временно недоступен"));
+        assertEquals("path-input", response.options().get(0).action());
     }
 }
