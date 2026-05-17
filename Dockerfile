@@ -11,7 +11,7 @@ COPY client_path.yml /app/client_path.yml
 COPY src/main/resources/application.yml /app/application.yml
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
-ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
+ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8"
 ENV MICRONAUT_CONFIG_FILES=/app/application.yml
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
